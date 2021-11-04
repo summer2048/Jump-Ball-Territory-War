@@ -37,7 +37,7 @@ run: $(PROGRAM_NAME)
 #make will automatically know that the objectfile needs to be compiled
 #form a cpp source file and find it itself :)
 $(PROGRAM_NAME): main.o
-	$(CCX) -o $@ $^ $(CFLAGS) mathLib2D.cpp $(LDFLAGS)
+	$(CCX) -o $@ $^ $(CFLAGS) marble.cpp player.cpp terrain.cpp $(LDFLAGS)
 
 clean:
 	$(RM) *.o $(PROGRAM_NAME)$(EXEEXT)

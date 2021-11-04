@@ -1,4 +1,4 @@
-#include "mathLib2D.h"
+#include "marble.h"
 #include <cmath>
 #include <iostream>
 #include <random>
@@ -56,17 +56,7 @@ Point3D Vec3D::movePoint(Point3D source){   //movePoint function
     return Point3D(source.mX+mX,source.mY+mY,source.mZ+mZ);
 };
 
-Angle::Angle(){
-	this->rx = 0.0;
-	this->ry = 0.0;
-	this->rz = 0.0;
-}
 
-Angle::Angle(float inX, float inY, float inZ){
-	this->rx = inX;
-	this->ry = inY;
-	this->rz = inZ;
-}
 
 Particle::Particle(){
 	this->Position= Point3D(0.0,0.0,0.0);
@@ -74,21 +64,15 @@ Particle::Particle(){
 	this->Size= 0;
 	this->Direction= Vec3D(0,0,0);
 	this->Speed=0.0;
-	this->RAngle=Angle(0,0,0);
 	this->Age=0;
-	this->Explode=0;
-	this->Sproperty=0;	
 }
 
-Particle::Particle(Point3D Pos, colour Col, float inS, Vec3D inV, float inSpd, Angle inA, int inAge, bool inE, int inMt, int inSp){
+Particle::Particle(Point3D Pos, colour Col, float inS, Vec3D inV, float inSpd, int inAge){
 	this->Position=Pos;
 	this->Color=Col;
 	this->Size=inS;
 	this->Direction=inV;
 	this->Speed=inSpd;
-	this->RAngle=inA;
 	this->Age=inAge;
-	this->Explode=inE;
-	this->Mtype=inMt;
-	this->Sproperty=inSp;
+
 }
