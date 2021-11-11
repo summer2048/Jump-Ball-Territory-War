@@ -10,9 +10,9 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include "marble.h"
 #include "terrain.h"
 #include "player.h"
+#include "particle.h"
 #include <math.h>
 #include <vector>
 #include <random>
@@ -25,12 +25,40 @@ std::random_device rd;
 std::mt19937 gen(rd()); 
 std::uniform_real_distribution<float> dis(0.0, 0.5);
 
-float pos[] = {0,1,0};
-float rot[] = {0, 0, 0};
-float headRot[] = {0, 0, 0};
-float camPos[] = {5, 5, 10};
+float camPos[] = {30, 60, 30}; //TOBE FIXED 1. Special key rotation is not smooth at first use.
+float upPos[] = {0, 1, 0};
+
+
+//TOBE FIXED 3. Add 3 more materials.
+float ambMat[7][4] = {{0.5, 0.5, 0.5, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1}};
+float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}};
+float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0}};
+
+float scaley = 0;
+float scalex = 0;
 
 vector <grid> Grids;
+
+/* LIGHTING */
+float light_pos[4] = {5, 5, 5, 1};
+float amb[4] = {1, 1, 1, 1};
+float diff[4] = {1, 1, 1, 1};
+float spec[4] = {1, 1, 1, 1};
+float light_pos2[4] = {-5, -5, -5, 1};
+float amb2[4] = {1, 0.5, 0.5, 1};
+float diff2[4] = {1, 0.5, 0.5, 1};
+float spec2[4] = {1, 0.5, 0.5, 1};
+
+/* -1 when partcam is off, non negative otherwise */
+int partcam = -1;
+
+vector<Particle> parts;
+
+// return a random float in [0,1)
+float randf()
+{
+	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
 
 void drawAxis(){
     glPushMatrix();
@@ -46,6 +74,49 @@ void drawAxis(){
 
     glEnd();
     glPopMatrix();
+}
+/* draw firework at position (x, 0, z) */
+void firework(float x, float z)
+{
+	Particle newPart(x, 0, z, 0, 1, 0);
+	newPart.age = 60;
+	newPart.speed = 0.1;
+	newPart.size = 0.3;
+	parts.push_back(newPart);
+}
+
+/* firework explosion*/
+void firework1(float dx, float dy, float dz, int mat)
+{
+	for (int i = 0; i < 20; i++)
+	{
+		float x = randf() - 0.5;
+		float z = randf() - 0.5;
+		float y = randf() - 0.5;
+		float length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+		Particle newPart(dx, dy, dz, x / length, y / length, z / length);
+		newPart.age = 60;
+		newPart.speed = 1;
+		newPart.size = 0.2;
+		newPart.mat = mat;
+		parts.push_back(newPart);
+	}
+}
+
+/* draw fountain at position (px, py, pz) */
+void fountain(int px = 0, int py = 0, int pz = 0)
+{
+	for (int i = 0; i < 30; i++)
+	{
+		float x = randf() - 0.5;
+		float z = randf() - 0.5;
+		float y = 20;
+		float length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+		Particle newpart(px, py, pz, x / length, y / length, z / length);
+		newpart.size = 0.2;
+		newpart.age = -3*i;
+		parts.push_back(newpart);
+	}
 }
 
 /* drawPolygon - takes 4 indices and an array of vertices
@@ -65,8 +136,6 @@ void drawPolygon(int a, int b, int c, int d, float v[8][3]){
  */
 void cube(float v[8][3])
 {
-//  faces[6][4];
-//	glNormal3f(0,1,0);
 	drawPolygon(0, 3, 2, 1, v);
 
 
@@ -100,13 +169,13 @@ void drawBox(float* c, float w, float h, float d)
 
 float mx = -9.5;
 float mz = 9.5;
-void GenFloor(){
+void GenFloor(){ // TOBE FIXED 2. Extand floor to fix particle movement (i.e. create 40x40 floor centering at origin (0,0,0)).
 	grid newGrid;
 
 	for (int i = 1; i <= 400; i++){
 		float H = dis(gen);
-    	colour c = colour(rand() %2,rand() %2,rand() %2);
-		newGrid = grid(c,H,mx,mz);
+    	int mat = rand()%7;
+		newGrid = grid(mat,H,mx,mz);
 		Grids.push_back(newGrid);
 
 		if (mx < 10 && mz > -10){
@@ -122,9 +191,11 @@ void GenFloor(){
 }
 
 void drawgridfloor(){
-
 	for (unsigned int i = 0; i < Grids.size(); i++){
-		glColor3f(get<0>(Grids[i].color),get<1>(Grids[i].color),get<2>(Grids[i].color));
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[Grids[i].mat]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[Grids[i].mat]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[Grids[i].mat]);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 27);
 		float origin[3] = {Grids[i].mx,0,Grids[i].mz};
 		drawBox(origin,1,Grids[i].Height,1);
 	}	
@@ -140,39 +211,124 @@ void keyboard(unsigned char key, int x, int y)
 		case 'q':
 		case 27:
 			exit (0);
-			break;			
-	}
+			break;
+		case 'a':
+		firework(rand() % 10, rand() % 10);
+		break;
+	case 'p':
+		partcam = -1;
+		break;
+	case 'f':
+	case 'F':
+		fountain((randf()-0.5)*15,0,(randf()-0.5)*15);
+		break;
+
+	case 'r':
+	case 'R':
+		while (int i = parts.size() > 6)
+		{
+			parts.pop_back();
+		}
+		break;
+	case 49:
+	case 50:
+	case 51:
+	case 52:
+	case 53:
+	case 54:
+		partcam = key - 49;
+		break;
+	}		
 	glutPostRedisplay();
 }
 
 void SpecialKey(int key, int x, int y){
-	switch(key){
-    	case GLUT_KEY_UP: //'up' key to increment eye y position
-			camPos[1]++;
-			break;
-		case GLUT_KEY_DOWN: //'down' key to decrease eye y position
-			camPos[1]--;
-			break;
-		case GLUT_KEY_LEFT: //'left' key to increment eye x position
-			camPos[0]++;
-			break;
-		case GLUT_KEY_RIGHT: //'right' key to decrease eye x position
-			camPos[0]--;
-			break;	
+	float radius = sqrt(2 * pow(30,2));// TOBE FIXED 1. Special key rotation is not smooth at first use.
+	switch (key)
+	{
+	//camera rotate about y axis
+	case GLUT_KEY_LEFT:
+		scaley = scaley + 0.1;
+		camPos[0] = radius * sin(scaley);
+		camPos[2] = radius * cos(scaley);
+		break;
+	case GLUT_KEY_RIGHT:
+		scaley = scaley - 0.1;
+		camPos[0] = radius * sin(scaley);
+		camPos[2] = radius * cos(scaley);
+		break;
+	//camera rotate about x axis
+	case GLUT_KEY_UP:
+		scalex = scalex + 0.1;
+		camPos[1] = radius * sin(scalex);
+		camPos[2] = radius * cos(scalex);
+		break;
+	case GLUT_KEY_DOWN:
+		scalex = scalex - 0.1;
+		camPos[1] = radius * sin(scalex);
+		camPos[2] = radius * cos(scalex);
+		break;
 	}
 	glutPostRedisplay();
 }
 
+/* initial 6 permanent particles */
+void initParts()
+{
+for (int i = 0; i < 6; i++)
+	{
+		float px = (randf() - 0.5) * 20;
+		float pz = (randf() - 0.5) * 20;
+		float py = 0;
+		float x = randf() - 0.5;
+		float z = randf() - 0.5;
+		float y = 0;
+		float length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+		Particle newpart(px, py, pz, x / length, y / length, z / length);
+		newpart.is_permanent = true;
+		newpart.size = 0.4;
+		newpart.speed = 0.2;
+		parts.push_back(newpart);
+	}
+}
 
 
 void init(void)
 {	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 	glClearColor(0.5, 0.5, 0.5, 0);
 	glColor3f(1, 1, 1);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-//	glOrtho(-5, 5, -5, 5, -5, 80);
-	gluPerspective(80, 1, 1, 100);
+	gluPerspective(45, 1, 1, 100);
+	// Initial 6 permanent particles.
+	initParts();
+}
+
+/* draw particles */
+void drawparts()
+{
+	glPushMatrix();
+	glTranslatef(0, 1, 0);
+	for (int i = 0; i < parts.size(); ++i)
+	{
+		if (parts[i].age < 0) continue;
+		int mat = parts[i].mat;
+		glPushMatrix();
+		glTranslatef(parts[i].position[0], parts[i].position[1], parts[i].position[2]);
+
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[parts[i].mat]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[parts[i].mat]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[parts[i].mat]);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 27);
+
+		glColor3f(ambMat[mat][0], ambMat[mat][1], ambMat[mat][2]);
+		glutSolidSphere(parts[i].size, 16, 16);
+
+		glPopMatrix();
+	}
+	glPopMatrix();
 }
 
 
@@ -185,16 +341,99 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	gluLookAt(camPos[0], camPos[1], camPos[2], 0,0,0, 0,1,0);
-	glColor3f(1,1,1);
+	// Particle camera is on
+	if (partcam != -1)
+	{
+		gluLookAt(parts[partcam].position[0] - parts[partcam].direction[0], 25, parts[partcam].position[2] - parts[partcam].direction[2],
+		parts[partcam].position[0], 3, parts[partcam].position[2], upPos[0], upPos[1], upPos[2]);
+	}
+	else
+	{
+		gluLookAt(camPos[0], camPos[1], camPos[2], 0, 0, 0, upPos[0], upPos[1], upPos[2]);
+	}
+	glColor3f(1, 1, 1);
+	
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diff);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
+
+	glLightfv(GL_LIGHT1, GL_POSITION, light_pos2);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, amb);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diff);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
 
     //drawBox(origin, 1, 0.5, 1);
 	//drawBox(origin1,1,0.5,1);
     //drawAxis();
 	drawgridfloor();
 
+	drawparts();
+
 	glutSwapBuffers();
-	
+}
+
+/* Delete a particle when its age greater than default life duration */
+void deleteParticle(int i)
+{
+	parts[i] = parts[parts.size() - 1];
+	parts.pop_back();
+}
+
+/* move all particles */
+void moveAll()
+{
+	for (int i = 0; i < parts.size(); i++)
+	{
+		// Negative age to delay particle creation, so particles with negative age won't be moved
+		if (parts[i].age < 0) continue;
+		parts[i].position[0] += parts[i].direction[0] * parts[i].speed;
+		parts[i].position[1] += parts[i].direction[1] * parts[i].speed;
+		parts[i].position[2] += parts[i].direction[2] * parts[i].speed;
+		float x, y, z, length;
+		x = parts[i].direction[0] * parts[i].speed;
+		y = parts[i].direction[1] * parts[i].speed - 0.1;
+		z = parts[i].direction[2] * parts[i].speed;
+		length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+		parts[i].direction[0] = x / length;
+		parts[i].direction[1] = y / length;
+		parts[i].direction[2] = z / length;
+		// Change direction if it reaches boundary.
+		if (parts[i].position[0] > 20 || parts[i].position[0] < -20 || parts[i].position[2] > 20 || parts[i].position[2] < -20)
+		{
+			parts[i].direction[0] = -parts[i].direction[0];
+			parts[i].direction[2] = -parts[i].direction[2];
+		}
+		// Change direction if it reaches the floor.
+		if (parts[i].position[1] < 0 && parts[i].direction[1] < 0)
+		{
+			parts[i].direction[1] = -parts[i].direction[1];
+			// Decrease its speed unless it is permanent paritcle.
+			if (!parts[i].is_permanent)
+				parts[i].speed *= 0.7;
+		}
+	}
+}
+
+/* FPS function - 60 FPS per second */
+void FPS(int val)
+{
+	moveAll();
+	glutPostRedisplay();
+	for (int i = 0; i < parts.size(); i++)
+	{
+		if (!parts[i].is_permanent)
+			parts[i].age++;
+		if (parts[i].age >= Particle::DEFAULT_LIFE_DURATION)
+		{
+			if (parts[i].size > 0.3)
+			{
+				firework1(parts[i].position[0], parts[i].position[1], parts[i].position[2], parts[i].mat);
+			}
+			deleteParticle(i);
+		}
+	}
+	glutTimerFunc(17, FPS, 0);
 }
 
 /* main function - program entry point */
@@ -214,6 +453,7 @@ int main(int argc, char** argv)
 	glutDisplayFunc(display);	//registers "display" as the display callback function
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
+	glutTimerFunc(17, FPS, 0);
 
 	glEnable(GL_DEPTH_TEST);
     

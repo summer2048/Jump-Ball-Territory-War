@@ -3,18 +3,14 @@
 #include <tuple>
 using namespace std;
 
-typedef tuple <int,int,int> colour;
-
-class grid {
+class grid {//TOBE FIXED 3. Add a function getHeight(float x, float z), return height of grid with given x,z value.
 public:
     grid();
-    grid(colour Col,float inH, float mx, float mz);
+    grid(int mat,float inH, float mx, float mz);
     float Height;
-    colour color;
+    int mat;
     float mx;
     float mz;
-
-    
 };
 
 #endif

@@ -1,0 +1,5 @@
+make.exe --dry-run --keep-going --print-directory
+make: Entering directory '/c/Users/Administrator/MyCode/project_3gc3/github/Final-Project'
+./main
+make: Leaving directory '/c/Users/Administrator/MyCode/project_3gc3/github/Final-Project'
+ 
