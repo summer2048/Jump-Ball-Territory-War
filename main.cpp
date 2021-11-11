@@ -440,7 +440,7 @@ void FPS(int val)
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);		//starts up GLUT
-	
+	cout << 'hello' << endl;
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH );
     
 	
