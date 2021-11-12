@@ -16,6 +16,7 @@
 #include <math.h>
 #include <vector>
 #include <random>
+#include <iostream>
 
 using namespace std; 
 
@@ -44,6 +45,7 @@ float light_pos[4] = {5, 5, 5, 1};
 float amb[4] = {1, 1, 1, 1};
 float diff[4] = {1, 1, 1, 1};
 float spec[4] = {1, 1, 1, 1};
+
 float light_pos2[4] = {-5, -5, -5, 1};
 float amb2[4] = {1, 0.5, 0.5, 1};
 float diff2[4] = {1, 0.5, 0.5, 1};
@@ -167,31 +169,33 @@ void drawBox(float* c, float w, float h, float d)
 	cube(vertices);
 }
 
-float mx = -9.5;
-float mz = 9.5;
-void GenFloor(){ // TOBE FIXED 2. Extand floor to fix particle movement (i.e. create 40x40 floor centering at origin (0,0,0)).
+float mx = -19.5;
+float mz = 19.5;
+//create 40x40 floor centering at origin (0,0,0)
+void GenFloor(){ 
 	grid newGrid;
 
-	for (int i = 1; i <= 400; i++){
+	for (int i = 1; i <= 1600; i++){
 		float H = dis(gen);
     	int mat = rand()%7;
-		newGrid = grid(mat,H,mx,mz);
+		newGrid = grid(i,mat,H,mx,mz);
 		Grids.push_back(newGrid);
 
-		if (mx < 10 && mz > -10){
+		if (mx < 20 && mz > -20){
 			mz -=1;
 		}
-		if (mx < 10 && mz < -10){
+		if (mx < 20 && mz < -20){
 			mx +=1;
-			mz = 9.5;
+			mz = 19.5;
 		}
 		//std::cout<<mx<<" "<<mz<<endl;
 	}
 	//std::cout<<Grids.size()<<" floors generated!!!"<<endl;
 }
 
+//Used to draw the grid floor
 void drawgridfloor(){
-	for (unsigned int i = 0; i < Grids.size(); i++){
+	for (unsigned int i = 1; i < Grids.size(); i++){
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[Grids[i].mat]);
@@ -450,6 +454,7 @@ int main(int argc, char** argv)
 	
 	GenFloor();
 	glutDisplayFunc(display);	//registers "display" as the display callback function
+	//std::cout<<Grids[800].getNumber()<<endl;	
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
 	glutTimerFunc(17, FPS, 0);

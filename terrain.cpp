@@ -8,9 +8,18 @@ grid::grid(){
     this->mz = 0;
 }
 
-grid::grid(int mat,float inH, float inmx, float inmz){
+grid::grid(int inNum, int mat,float inH, float inmx, float inmz){
+    this->number = inNum;
     this->mat = mat;
     this->Height = inH;
     this->mx = inmx;
     this->mz = inmz;
+}
+
+float grid::getHeight(float x, float z){
+
+}
+
+int grid::getNumber(){
+    return this->number;
 }
