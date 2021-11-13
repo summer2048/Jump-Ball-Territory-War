@@ -16,10 +16,6 @@ grid::grid(int inNum, int mat,float inH, float inmx, float inmz){
     this->mz = inmz;
 }
 
-float grid::getHeight(float x, float z){
-
-}
-
-int grid::getNumber(){
-    return this->number;
+int grid::getNumber(float x, float z){  //return the current number of grid using x and z
+    return ((x + 19.5) * 40 + (19.5 - z) + 1);
 }

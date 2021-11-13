@@ -7,8 +7,7 @@ class grid {//TOBE FIXED 3. Add a function getHeight(float x, float z), return h
 public:
     grid();
     grid(int inNum, int mat,float inH, float mx, float mz);
-    float getHeight(float x, float z);
-    int getNumber();
+    int getNumber(float x, float z);
     float Height;
     int number;
     int mat;

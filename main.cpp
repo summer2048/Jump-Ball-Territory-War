@@ -30,10 +30,10 @@ float camPos[] = {30, 60, 30}; //TOBE FIXED 1. Special key rotation is not smoot
 float upPos[] = {0, 1, 0};
 
 
-//TOBE FIXED 3. Add 3 more materials.
-float ambMat[7][4] = {{0.5, 0.5, 0.5, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1}};
-float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}};
-float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0}};
+
+float ambMat[7][4] = {{0.5, 0.5, 0.5, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.1f, 0.18725f, 0.1745f, 0.8f },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
+float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0},{0.396f, 0.74151f, 0.69102f, 0.8f },{0.5f,0.5f,0.4f,1.0f},{0.5508f, 0.2118f, 0.066f, 1.0f }};
+float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0},{0.297254f, 0.30829f, 0.306678f, 0.8f},{0.7f,0.7f,0.04f,1.0f},{0.580594f, 0.223257f, 0.0695701f, 1.0f }};
 
 float scaley = 0;
 float scalex = 0;
@@ -41,12 +41,12 @@ float scalex = 0;
 vector <grid> Grids;
 
 /* LIGHTING */
-float light_pos[4] = {5, 5, 5, 1};
+float light_pos[4] = {5, 5, 5, 0};
 float amb[4] = {1, 1, 1, 1};
 float diff[4] = {1, 1, 1, 1};
 float spec[4] = {1, 1, 1, 1};
 
-float light_pos2[4] = {-5, -5, -5, 1};
+float light_pos2[4] = {-5, -5, -5, 0};
 float amb2[4] = {1, 0.5, 0.5, 1};
 float diff2[4] = {1, 0.5, 0.5, 1};
 float spec2[4] = {1, 0.5, 0.5, 1};
@@ -301,6 +301,7 @@ void init(void)
 {	
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
 	glClearColor(0.5, 0.5, 0.5, 0);
 	glColor3f(1, 1, 1);
 	glMatrixMode(GL_PROJECTION);
@@ -403,9 +404,10 @@ void moveAll()
 		parts[i].direction[1] = y / length;
 		parts[i].direction[2] = z / length;
 		// Change direction if it reaches boundary.
-		if (parts[i].position[0] > 20 || parts[i].position[0] < -20 || parts[i].position[2] > 20 || parts[i].position[2] < -20)
-		{
+		if (parts[i].position[0] > 20 || parts[i].position[0] < -20){
 			parts[i].direction[0] = -parts[i].direction[0];
+		}
+		if (parts[i].position[2] > 20 || parts[i].position[2] < -20){
 			parts[i].direction[2] = -parts[i].direction[2];
 		}
 		// Change direction if it reaches the floor.
