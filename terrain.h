@@ -3,11 +3,11 @@
 #include <tuple>
 using namespace std;
 
-class grid {//TOBE FIXED 3. Add a function getHeight(float x, float z), return height of grid with given x,z value.
+class grid {
 public:
     grid();
     grid(int inNum, int mat,float inH, float mx, float mz);
-    int getNumber(float x, float z);
+    static int getNumber(float x, float z);
     float Height;
     int number;
     int mat;

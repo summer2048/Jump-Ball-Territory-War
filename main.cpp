@@ -30,8 +30,8 @@ float camPos[] = {0, 60, 42};
 float upPos[] = {0, 1, 0};
 
 
-
-float ambMat[7][4] = {{0.5, 0.5, 0.5, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.1f, 0.18725f, 0.1745f, 0.8f },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
+// TOBE FIXED 2. two blue balls have similar color, have best to change one of it.
+float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.1f, 0.18725f, 0.1745f, 0.8f },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0},{0.396f, 0.74151f, 0.69102f, 0.8f },{0.5f,0.5f,0.4f,1.0f},{0.5508f, 0.2118f, 0.066f, 1.0f }};
 float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0},{0.297254f, 0.30829f, 0.306678f, 0.8f},{0.7f,0.7f,0.04f,1.0f},{0.580594f, 0.223257f, 0.0695701f, 1.0f }};
 
@@ -188,8 +188,8 @@ void GenFloor(){
 
 	for (int i = 1; i <= 1600; i++){
 		float H = dis(gen);
-    	int mat = rand()%7;
-		newGrid = grid(i,mat,H,mx,mz);
+    	// int mat = rand()%7;
+		newGrid = grid(i,0,H,mx,mz);
 		Grids.push_back(newGrid);
 
 		if (mx < 20 && mz > -20){
@@ -306,7 +306,7 @@ void SpecialKey(int key, int x, int y){
 /* initial 6 permanent particles */
 void initParts()
 {
-for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		float px = (randf() - 0.5) * 20;
 		float pz = (randf() - 0.5) * 20;
@@ -319,6 +319,7 @@ for (int i = 0; i < 6; i++)
 		newpart.is_permanent = true;
 		newpart.size = 0.4;
 		newpart.speed = 0.2;
+		newpart.mat = i+1;
 		parts.push_back(newpart);
 	}
 }
@@ -444,6 +445,8 @@ void moveAll()
 		if (parts[i].position[1] < 0 && parts[i].direction[1] < 0)
 		{
 			parts[i].direction[1] = -parts[i].direction[1];
+			int gridNum = grid::getNumber(parts[i].position[0],parts[i].position[2]);
+			Grids[gridNum].mat = parts[i].mat; // Floor coloring
 			// Decrease its speed unless it is permanent paritcle.
 			if (!parts[i].is_permanent)
 				parts[i].speed *= 0.7;

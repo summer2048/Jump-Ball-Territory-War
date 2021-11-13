@@ -16,6 +16,7 @@ grid::grid(int inNum, int mat,float inH, float inmx, float inmz){
     this->mz = inmz;
 }
 
+// TOBE FIXED 3. was not 100% correct in edge cases
 int grid::getNumber(float x, float z){  //return the current number of grid using x and z
-    return ((x + 19.5) * 40 + (19.5 - z) + 1);
+    return (int (x + 19.5) * 40 + int (19.5 - z) + 1);
 }
