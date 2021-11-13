@@ -26,7 +26,7 @@ std::random_device rd;
 std::mt19937 gen(rd()); 
 std::uniform_real_distribution<float> dis(0.0, 0.5);
 
-float camPos[] = {30, 60, 30}; //TOBE FIXED 1. Special key rotation is not smooth at first use.
+float camPos[] = {0, 60, 42}; 
 float upPos[] = {0, 1, 0};
 
 
@@ -62,10 +62,10 @@ float randf()
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-void drawAxis(){
+void drawAxis(float x, float z){
     glPushMatrix();
-	glTranslatef(-9,0,9);
-    glLineWidth(2);
+	glTranslatef(x,0,z);
+    glLineWidth(3);
     glBegin(GL_LINES);
 
 
@@ -77,6 +77,17 @@ void drawAxis(){
     glEnd();
     glPopMatrix();
 }
+
+player Player1(1,2,0,-18.5,18.5);
+player Player2(2,2,0,18.5,18.5);
+player Player3(3,2,0,-18.5,-18.5);
+player Player4(4,2,0,18.5,-18.5);
+
+
+int GetNumber(float x, float z){	//return the current number of grid using x and z
+	return ((x + 19.5) * 40 + (19.5 - z));
+}
+
 /* draw firework at position (x, 0, z) */
 void firework(float x, float z)
 {
@@ -195,7 +206,19 @@ void GenFloor(){
 
 //Used to draw the grid floor
 void drawgridfloor(){
-	for (unsigned int i = 1; i < Grids.size(); i++){
+	for (unsigned int i = 0; i <= Grids.size(); i++){
+		if (i == GetNumber(Player1.basex,Player1.basez)){
+			Grids[i].mat = Player1.mat;
+		}
+		if (i == GetNumber(Player2.basex,Player2.basez)){
+			Grids[i].mat = Player2.mat;
+		}
+		if (i == GetNumber(Player3.basex,Player3.basez)){
+			Grids[i].mat = Player3.mat;
+		}
+		if (i == GetNumber(Player4.basex,Player4.basez)){
+			Grids[i].mat = Player4.mat;
+		}
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[Grids[i].mat]);
@@ -255,22 +278,26 @@ void SpecialKey(int key, int x, int y){
 		scaley = scaley + 0.1;
 		camPos[0] = radius * sin(scaley);
 		camPos[2] = radius * cos(scaley);
+		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	case GLUT_KEY_RIGHT:
 		scaley = scaley - 0.1;
 		camPos[0] = radius * sin(scaley);
 		camPos[2] = radius * cos(scaley);
+		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	//camera rotate about x axis
 	case GLUT_KEY_UP:
 		scalex = scalex + 0.1;
 		camPos[1] = radius * sin(scalex);
 		camPos[2] = radius * cos(scalex);
+		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	case GLUT_KEY_DOWN:
 		scalex = scalex - 0.1;
 		camPos[1] = radius * sin(scalex);
 		camPos[2] = radius * cos(scalex);
+		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	}
 	glutPostRedisplay();
@@ -370,7 +397,10 @@ void display(void)
 
     //drawBox(origin, 1, 0.5, 1);
 	//drawBox(origin1,1,0.5,1);
-    //drawAxis();
+    drawAxis(-18.5,18.5);
+	drawAxis(18.5,18.5);
+	drawAxis(-18.5,-18.5);
+	drawAxis(18.5,-18.5);
 	drawgridfloor();
 
 	drawparts();
