@@ -303,25 +303,19 @@ void SpecialKey(int key, int x, int y){
 	glutPostRedisplay();
 }
 
-/* initial 6 permanent particles */
-void initParts()
-{
-	for (int i = 0; i < 6; i++)
-	{
-		float px = (randf() - 0.5) * 20;
-		float pz = (randf() - 0.5) * 20;
+/* initial 4 permanent particles */
+void initParts(int inM, float inX, float inZ){
 		float py = 0;
 		float x = randf() - 0.5;
 		float z = randf() - 0.5;
 		float y = 0;
 		float length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
-		Particle newpart(px, py, pz, x / length, y / length, z / length);
+		Particle newpart(inX, py, inZ, x / length, y / length, z / length);
 		newpart.is_permanent = true;
 		newpart.size = 0.4;
 		newpart.speed = 0.2;
-		newpart.mat = i+1;
+		newpart.mat = inM;
 		parts.push_back(newpart);
-	}
 }
 
 
@@ -336,7 +330,10 @@ void init(void)
 	glLoadIdentity();
 	gluPerspective(45, 1, 1, 100);
 	// Initial 6 permanent particles.
-	initParts();
+	initParts(1,-18.5,18.5);
+	initParts(2,18.5,18.5);
+	initParts(3,-18.5,-18.5);
+	initParts(4,18.5,-18.5);
 }
 
 /* draw particles */
