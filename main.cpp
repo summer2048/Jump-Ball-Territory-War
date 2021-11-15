@@ -31,7 +31,7 @@ float upPos[] = {0, 1, 0};
 
 
 // TOBE FIXED 2. two blue balls have similar color, have best to change one of it.
-float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.1f, 0.18725f, 0.1745f, 0.8f },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
+float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.5, 0.4, 0.3, 0.2 },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0},{0.396f, 0.74151f, 0.69102f, 0.8f },{0.5f,0.5f,0.4f,1.0f},{0.5508f, 0.2118f, 0.066f, 1.0f }};
 float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0},{0.297254f, 0.30829f, 0.306678f, 0.8f},{0.7f,0.7f,0.04f,1.0f},{0.580594f, 0.223257f, 0.0695701f, 1.0f }};
 
@@ -209,15 +209,19 @@ void drawgridfloor(){
 	for (unsigned int i = 0; i <= Grids.size(); i++){
 		if (i == GetNumber(Player1.basex,Player1.basez)){
 			Grids[i].mat = Player1.mat;
+			
 		}
 		if (i == GetNumber(Player2.basex,Player2.basez)){
 			Grids[i].mat = Player2.mat;
+			
 		}
 		if (i == GetNumber(Player3.basex,Player3.basez)){
 			Grids[i].mat = Player3.mat;
+			
 		}
 		if (i == GetNumber(Player4.basex,Player4.basez)){
 			Grids[i].mat = Player4.mat;
+			
 		}
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[Grids[i].mat]);
@@ -318,7 +322,8 @@ void initParts(int inM, float inX, float inZ){
 		parts.push_back(newpart);
 }
 
-
+//GLubyte wb[2] = { 0x00, 0xff };
+//GLubyte checker[512];
 void init(void)
 {	
 	glEnable(GL_LIGHTING);
@@ -334,6 +339,12 @@ void init(void)
 	initParts(2,18.5,18.5);
 	initParts(3,-18.5,-18.5);
 	initParts(4,18.5,-18.5);
+	/*int i, j; 
+	for (i = 0; i < 64; i++) {
+		for (j = 0; j < 8; j++) {
+			checker[i * 8 + j] = wb[(i / 8 + j) % 2];
+		}
+	} */
 }
 
 /* draw particles */
@@ -361,12 +372,16 @@ void drawparts()
 	glPopMatrix();
 }
 
-
+float bar1[3] = { -20,12,0 };
+float bar2[3] = { -20,10,0 };
+float bar3[3] = { -20,8,0 };
+float bar4[3] = { -20,6,0 };
 /* display function - GLUT display callback function
  *		clears the screen, sets the camera position, draws the ground plane and movable box
  */
 void display(void)
 {
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -400,12 +415,72 @@ void display(void)
 	drawAxis(-18.5,-18.5);
 	drawAxis(18.5,-18.5);
 	drawgridfloor();
-
 	drawparts();
-
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[1]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[1]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[1]);
+	drawBox(bar1, 2, 1, float(Player1.points)/30);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[2]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[2]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[2]);
+	drawBox(bar2, 2, 1, float(Player2.points) /30);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[3]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[3]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[3]);
+	drawBox(bar3, 2, 1, float(Player3.points) /30);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[4]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[4]);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[4]);
+	drawBox(bar4, 2, 1, float(Player4.points) /30);
+	//glPixelZoom(-0.5f, -0.5f);
+	//glRasterPos2i(1, 1);
+	//glCopyPixels(10, -10,20,20 GL_RGB);
+	cout << Player1.points << endl;
 	glutSwapBuffers();
+	
 }
 
+//void drawbar(void) {
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[1]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[1]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[1]);
+//	drawBox(bar1, 2, 1, 6);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[2]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[2]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[2]);
+//	drawBox(bar2, 2, 1, 10);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[3]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[3]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[3]);
+//	drawBox(bar3, 2, 1, 4);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[4]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[4]);
+//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[4]);
+//	drawBox(bar4, 2, 1, 12);
+//
+//}
+void countScore(void) {
+	vector<grid>::iterator i;
+	Player1.points = 0;
+	Player2.points = 0;
+	Player3.points = 0;
+	Player4.points = 0;
+	for (i = Grids.begin(); i != Grids.end(); ++i) {
+		if (i->mat == Player1.mat) {
+			Player1.points++;
+		}
+		if (i->mat == Player2.mat) {
+			Player2.points++;
+		}
+		if (i->mat == Player3.mat) {
+			Player3.points++;
+		}
+		if (i->mat == Player4.mat) {
+			Player4.points++;
+		}
+	}
+
+}
 /* Delete a particle when its age greater than default life duration */
 void deleteParticle(int i)
 {
@@ -444,6 +519,7 @@ void moveAll()
 			parts[i].direction[1] = -parts[i].direction[1];
 			int gridNum = grid::getNumber(parts[i].position[0],parts[i].position[2]);
 			Grids[gridNum].mat = parts[i].mat; // Floor coloring
+			
 			// Decrease its speed unless it is permanent paritcle.
 			if (!parts[i].is_permanent)
 				parts[i].speed *= 0.7;
@@ -454,6 +530,7 @@ void moveAll()
 /* FPS function - 60 FPS per second */
 void FPS(int val)
 {
+	countScore();
 	moveAll();
 	glutPostRedisplay();
 	for (int i = 0; i < parts.size(); i++)
@@ -490,7 +567,7 @@ int main(int argc, char** argv)
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
 	glutTimerFunc(17, FPS, 0);
-
+	
 	glEnable(GL_DEPTH_TEST);
     
 	glFrontFace(GL_CW);
@@ -498,7 +575,7 @@ int main(int argc, char** argv)
 	glEnable(GL_CULL_FACE);
     
 	init();
-
+	
 	glutMainLoop();				//starts the event loop
 
 	return(0);					//return may not be necessary on all compilers
