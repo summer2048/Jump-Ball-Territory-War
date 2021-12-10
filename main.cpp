@@ -20,7 +20,6 @@
 
 using namespace std; 
 
-float verts[8][3] = { {-1,-1,1}, {-1,1,1}, {1,1,1}, {1,-1,1}, {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1} };
 
 std::random_device rd; 
 std::mt19937 gen(rd()); 
@@ -29,6 +28,9 @@ std::uniform_real_distribution<float> dis(0.0, 0.5);
 float camPos[] = {0, 60, 42}; 
 float upPos[] = {0, 1, 0};
 
+GLubyte* img_1;
+int Width1, Height1, Max1;
+unsigned int Texture[3];
 
 // TOBE FIXED 2. two blue balls have similar color, have best to change one of it.
 float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.5, 0.4, 0.3, 0.2 },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
@@ -37,7 +39,12 @@ float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1,
 
 float scaley = 0;
 float scalex = 0;
-
+bool blend = false;
+int MouseX = 0;			//Mouse position X
+int MouseY = 0;			//Mouse position Y
+bool LeftButton = false; // track left mouse status
+bool RightButton = false; // track right mouse status
+bool middleButton = false; //track middle mouse status
 vector <grid> Grids;
 
 /* LIGHTING */
@@ -62,20 +69,58 @@ float randf()
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-void drawAxis(float x, float z){
-    glPushMatrix();
-	glTranslatef(x,0,z);
-    glLineWidth(3);
-    glBegin(GL_LINES);
-
-
-    glColor3f (0.0, 1.0, 0.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 5.0, 0.0);
-
-
-    glEnd();
-    glPopMatrix();
+GLubyte* LoadPPM(char* file, int* width, int* height, int* max)
+{
+    GLubyte* img;
+    FILE *fd;
+    int n, m;
+    int  k, nm;
+    char c;
+    int i;
+    char b[100];
+    float s;
+    int red, green, blue;
+    
+    fd = fopen(file, "r");
+    fscanf(fd,"%[^\n] ",b);
+    if(b[0]!='P'|| b[1] != '3')
+    {
+        printf("%s is not a PPM file!\n",file);
+        exit(0);
+    }
+    printf("%s is a PPM file\n", file);
+    fscanf(fd, "%c",&c);
+    while(c == '#')
+    {
+        fscanf(fd, "%[^\n] ", b);
+        printf("%s\n",b);
+        fscanf(fd, "%c",&c);
+    }
+    ungetc(c,fd);
+    fscanf(fd, "%d %d %d", &n, &m, &k);
+    
+    //printf("%d rows  %d columns  max value= %d\n",n,m,k);
+    
+    nm = n*m;
+    
+    img = (GLubyte*)(malloc(3*sizeof(GLuint)*nm));
+    
+    s=255.0/k;
+    
+    
+    for(i=0;i<nm;i++)
+    {
+        fscanf(fd,"%d %d %d",&red, &green, &blue );
+        img[3*nm-3*i-3]=red*s;
+        img[3*nm-3*i-2]=green*s;
+        img[3*nm-3*i-1]=blue*s;
+    }
+    
+    *width = n;
+    *height = m;
+    *max = k;
+    
+    return img;
 }
 
 player Player1(1,2,0,-18.5,18.5);
@@ -137,10 +182,17 @@ void fountain(int px = 0, int py = 0, int pz = 0)
  */
 void drawPolygon(int a, int b, int c, int d, float v[8][3]){
 	glBegin(GL_POLYGON);
-		glVertex3fv(v[a]);
-		glVertex3fv(v[b]);
-		glVertex3fv(v[c]);
-		glVertex3fv(v[d]);
+	glTexCoord2f(0, 0);
+    glVertex3fv(v[a]);
+    
+    glTexCoord2f(0, 1);
+    glVertex3fv(v[b]);
+    
+    glTexCoord2f(1, 1);
+    glVertex3fv(v[c]);
+    
+    glTexCoord2f(1, 0);
+    glVertex3fv(v[d]);
 	glEnd();
 }
 
@@ -233,6 +285,45 @@ void drawgridfloor(){
 	//glutPostRedisplay();
 }
 
+void Intersectiontest(){
+	double projection[16];
+	double modelview[16];
+	int viewport[4];
+	float NearZ = 0;	//near Z plane
+	float FarZ = 1;		//far Z plane
+  	double Nobjx,Nobjy,Nobjz;	//near points coordinates
+	double Fobjx,Fobjy,Fobjz;	//far points coordinates
+	glGetDoublev( GL_PROJECTION_MATRIX, projection );
+	glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
+	glGetIntegerv( GL_VIEWPORT, viewport );	
+	gluUnProject( MouseX, MouseY, NearZ , modelview, projection, viewport, &Nobjx, &Nobjy, &Nobjz );
+	gluUnProject( MouseX, MouseY, FarZ , modelview, projection, viewport, &Fobjx, &Fobjy, &Fobjz );
+
+	double rayX = Fobjx - Nobjx;
+	double rayY = Fobjy - Nobjy;
+	double rayZ = Fobjz - Nobjz;
+	double unit = sqrt(rayX*rayX + rayY*rayY + rayZ*rayZ);
+	rayX /= unit;
+	rayY /= unit;
+	rayZ /= unit;
+	
+	if (LeftButton == true){
+	double t = ((30) - Nobjx)/rayX;
+
+	double IntersectX,IntersectY,IntersectZ;	//calculated intersect points
+	IntersectX = 30;
+	IntersectY = Nobjy + t * rayY;
+	IntersectZ = Nobjz + t * rayZ;
+	
+		if(IntersectX > 28 && IntersectX < 32 &&
+		IntersectY > 8 && IntersectY < 12 &&
+		IntersectZ > -22 && IntersectZ < -18){
+			firework(rand() % 10, rand() % 10);
+		}
+	}
+	
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 
@@ -256,10 +347,19 @@ void keyboard(unsigned char key, int x, int y)
 
 	case 'r':
 	case 'R':
-		while (int i = parts.size() > 6)
+		while (int i = parts.size() > 4)
 		{
 			parts.pop_back();
 		}
+		break;
+	case 'b':
+	case 'B':
+		blend = !blend;
+		if (blend){
+		glEnable(GL_BLEND);
+	}	else {
+		glDisable(GL_BLEND);
+	}
 		break;
 	case 49:
 	case 50:
@@ -330,7 +430,7 @@ void init(void)
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glClearColor(0.5, 0.5, 0.5, 0);
-	glColor3f(1, 1, 1);
+	glColor4f(1, 1, 1,1);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45, 1, 1, 100);
@@ -345,6 +445,9 @@ void init(void)
 			checker[i * 8 + j] = wb[(i / 8 + j) % 2];
 		}
 	} */
+
+	glEnable(GL_TEXTURE_2D);
+	img_1 = LoadPPM("sky1.ppm",&Width1, &Height1, &Max1);
 }
 
 /* draw particles */
@@ -364,7 +467,7 @@ void drawparts()
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[parts[i].mat]);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 27);
 
-		glColor3f(ambMat[mat][0], ambMat[mat][1], ambMat[mat][2]);
+		glColor4f(ambMat[mat][0], ambMat[mat][1], ambMat[mat][2],1);
 		glutSolidSphere(parts[i].size, 16, 16);
 
 		glPopMatrix();
@@ -396,7 +499,7 @@ void display(void)
 	{
 		gluLookAt(camPos[0], camPos[1], camPos[2], 0, 0, 0, upPos[0], upPos[1], upPos[2]);
 	}
-	glColor3f(1, 1, 1);
+	glColor4f(1, 1, 1,1);
 	
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
@@ -410,10 +513,6 @@ void display(void)
 
     //drawBox(origin, 1, 0.5, 1);
 	//drawBox(origin1,1,0.5,1);
-    drawAxis(-18.5,18.5);
-	drawAxis(18.5,18.5);
-	drawAxis(-18.5,-18.5);
-	drawAxis(18.5,-18.5);
 	drawgridfloor();
 	drawparts();
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[1]);
@@ -432,10 +531,30 @@ void display(void)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[4]);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[4]);
 	drawBox(bar4, 2, 1, float(Player4.points) /30);
+
+	glBindTexture(GL_TEXTURE_2D, Texture[0]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		    
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width1, Height1, 0, GL_RGB, GL_UNSIGNED_BYTE, img_1);
+
+	glPushMatrix();
+	float origin[3] = {0,0,0};
+	glTranslatef(-40,0,0);
+	drawBox(origin, 0,80,80);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(30,10,-20);
+	glutSolidCube(2);
+	glPopMatrix();
+	
 	//glPixelZoom(-0.5f, -0.5f);
 	//glRasterPos2i(1, 1);
 	//glCopyPixels(10, -10,20,20 GL_RGB);
-	cout << Player1.points << endl;
+	//cout << Player1.points << endl;
 	glutSwapBuffers();
 	
 }
@@ -548,6 +667,27 @@ void FPS(int val)
 	}
 	glutTimerFunc(17, FPS, 0);
 }
+void Mouse(int btn, int state, int x, int y){
+	if (state == GLUT_UP){
+        LeftButton = false;
+        RightButton = false;
+		middleButton = false;
+    }
+	if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+        LeftButton = true;
+    }
+    if (btn == GLUT_RIGHT_BUTTON && state == GLUT_DOWN){
+        RightButton = true;
+    }
+	if (btn == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN){
+        middleButton = true;
+    }
+	MouseX = x;
+	MouseY = 800 - y;
+	Intersectiontest();
+	//std::cout<<MouseX<<" "<<MouseY<<endl; 
+	glutPostRedisplay();
+}
 
 /* main function - program entry point */
 int main(int argc, char** argv)
@@ -566,10 +706,13 @@ int main(int argc, char** argv)
 	//std::cout<<Grids[800].getNumber()<<endl;	
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
+	glutMouseFunc(Mouse);
 	glutTimerFunc(17, FPS, 0);
 	
 	glEnable(GL_DEPTH_TEST);
-    
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE,GL_DST_COLOR);	
+
 	glFrontFace(GL_CW);
 	glCullFace(GL_FRONT);
 	glEnable(GL_CULL_FACE);

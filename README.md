@@ -10,6 +10,7 @@
 | a  | a firework which generates a particle explosion  |   
 | f  | a particle foutain (like A3)  |
 | 1-4 | Camera Cam which follows a single marble |
+| p | Camera Cam which shows a whole map |
 | r | clear small marbles except for 4 original marbles |
 
 ## Reference
