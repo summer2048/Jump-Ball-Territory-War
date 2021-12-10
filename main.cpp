@@ -475,6 +475,28 @@ void drawparts()
 	glPopMatrix();
 }
 
+void showtext(){
+	string String1 = "Marble Territory War!!!";
+	int len = String1.length();
+	glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, 800, 0, 800);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glRasterPos2f(100, 100);
+	for (int i = 0; i < len; ++i) {
+    	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String1[i]);
+	}
+    glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
 float bar1[3] = { -20,12,0 };
 float bar2[3] = { -20,10,0 };
 float bar3[3] = { -20,8,0 };
@@ -483,12 +505,11 @@ float bar4[3] = { -20,6,0 };
  *		clears the screen, sets the camera position, draws the ground plane and movable box
  */
 void display(void)
-{
-
+{	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
+	showtext();
 	// Particle camera is on
 	if (partcam != -1)
 	{
@@ -645,6 +666,7 @@ void moveAll()
 		}
 	}
 }
+
 
 /* FPS function - 60 FPS per second */
 void FPS(int val)
