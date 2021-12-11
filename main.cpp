@@ -678,7 +678,7 @@ void FPS(int val)
 	{
 		if (!parts[i].is_permanent)
 			parts[i].age++;
-		if (parts[i].age >= Particle::DEFAULT_LIFE_DURATION)
+		if (parts[i].age >= DEFAULT_LIFE_DURATION)
 		{
 			if (parts[i].size > 0.3)
 			{
