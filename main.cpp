@@ -30,14 +30,12 @@ float upPos[] = {0, 1, 0};
 
 GLubyte* img_1;
 int Width1, Height1, Max1;
-GLubyte* Welcome_img;
-int Width2, Height2, Max2;
 unsigned int Texture[3];
 
 // TOBE FIXED 2. two blue balls have similar color, have best to change one of it.
-float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.2295f, 0.08825f, 0.0275f, 1.0f },{ 0.5, 0.4, 0.3, 0.2 },{ 0.05f,0.05f,0.0f,1.0f }};
-float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0},{0.5508f, 0.2118f, 0.066f, 1.0f },{0.396f, 0.74151f, 0.69102f, 0.8f },{0.5f,0.5f,0.4f,1.0f}};
-float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0},{0.580594f, 0.223257f, 0.0695701f, 1.0f },{0.297254f, 0.30829f, 0.306678f, 0.8f},{0.7f,0.7f,0.04f,1.0f}};
+float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.5, 0.4, 0.3, 0.2 },{ 0.05f,0.05f,0.0f,1.0f },{ 0.2295f, 0.08825f, 0.0275f, 1.0f }};
+float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0},{0.396f, 0.74151f, 0.69102f, 0.8f },{0.5f,0.5f,0.4f,1.0f},{0.5508f, 0.2118f, 0.066f, 1.0f }};
+float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0},{0.297254f, 0.30829f, 0.306678f, 0.8f},{0.7f,0.7f,0.04f,1.0f},{0.580594f, 0.223257f, 0.0695701f, 1.0f }};
 
 float scaley = 0;
 float scalex = 0;
@@ -47,7 +45,6 @@ int MouseY = 0;			//Mouse position Y
 bool LeftButton = false; // track left mouse status
 bool RightButton = false; // track right mouse status
 bool middleButton = false; //track middle mouse status
-bool startgame = false;
 vector <grid> Grids;
 
 /* LIGHTING */
@@ -71,66 +68,6 @@ float randf()
 {
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
-
-struct Handler {
-    unsigned int mLeft, mRight, mTop, mBottom;
-    void (*mHandlerFunc)();
-
-    bool isInBounds(unsigned int x, unsigned int y) {
-        /**
-         * YOUR CODE HERE, replace `false` with your expression.
-         */
-        if (x <= mRight && x >= mLeft && y <= mTop && y >= mBottom){
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    void handleClickAt(unsigned int x, unsigned int y) {
-        if (isInBounds(x, y)) {
-            mHandlerFunc();
-        }
-    }
-
-    void drawBoxVertices() {
-        glVertex3f(mLeft, mTop, 1);
-        glVertex3f(mLeft, mBottom, 1);
-        glVertex3f(mRight, mTop, 1);
-        glVertex3f(mRight, mBottom, 1);
-        glVertex3f(mLeft, mTop, 1);
-        glVertex3f(mRight, mTop, 1);
-        glVertex3f(mLeft, mBottom, 1);
-        glVertex3f(mRight, mBottom, 1);
-    }
-};
-
-struct InteractionHandler {
-    std::vector<Handler *> mHandlers;
-
-    void leftClickDown(int x, int y) {
-        //std::cout << "Left click at " << x << ", " << y << std::endl;
-        for (Handler *handler : mHandlers) {
-            handler->handleClickAt(x,y);
-        }
-    }
-
-    void drawHandlers() {
-        glColor3f(1, 1, 1);
-        glLineWidth(2);
-        glBegin(GL_LINES);
-        for (Handler *handler : mHandlers) {
-            handler->drawBoxVertices();
-        }
-        glEnd();
-    }
-
-    void addHandler(Handler *handler) {
-        mHandlers.push_back(handler);
-    }
-};
-
-InteractionHandler mouseHandler;
 
 GLubyte* LoadPPM(char* file, int* width, int* height, int* max)
 {
@@ -510,8 +447,7 @@ void init(void)
 	} */
 
 	glEnable(GL_TEXTURE_2D);
-	img_1 = LoadPPM("ppm/sky1.ppm",&Width1, &Height1, &Max1);
-	Welcome_img = LoadPPM("ppm/welcome1.ppm",&Width2, &Height2, &Max2);
+	img_1 = LoadPPM("sky1.ppm",&Width1, &Height1, &Max1);
 }
 
 /* draw particles */
@@ -540,14 +476,7 @@ void drawparts()
 }
 
 void showtext(){
-	std::string score1 = std::to_string(Player1.points);
-	string String1 = "Player 1 Points : " + score1;
-	std::string score2 = std::to_string(Player2.points);
-	string String2 = "Player 2 Points : " + score2;
-	std::string score3 = std::to_string(Player3.points);
-	string String3 = "Player 3 Points : " + score3;
-	std::string score4 = std::to_string(Player4.points);
-	string String4 = "Player 4 Points : " + score4;
+	string String1 = "Marble Territory War!!!";
 	int len = String1.length();
 	glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -557,48 +486,15 @@ void showtext(){
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
-    glRasterPos2f(0, 770);
+    glRasterPos2f(100, 100);
 	for (int i = 0; i < len; ++i) {
     	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String1[i]);
 	}
     glPopMatrix();
-	glPushMatrix();
-    glLoadIdentity();
-    glRasterPos2f(0, 750);
-	for (int i = 0; i < len; ++i) {
-    	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String2[i]);
-	}
-    glPopMatrix();
-	glPushMatrix();
-    glLoadIdentity();
-    glRasterPos2f(0, 730);
-	for (int i = 0; i < len; ++i) {
-    	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String3[i]);
-	}
-    glPopMatrix();
-	glPushMatrix();
-    glLoadIdentity();
-    glRasterPos2f(0, 710);
-	for (int i = 0; i < len; ++i) {
-    	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String4[i]);
-	}
-    glPopMatrix();
+
 	glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
-}
-void welcomepage(){
-	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0, 800, 0, 800);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-	glRasterPos2i(250 + Width2, 300);
-    glPixelZoom(-1, 1);
-	if (!startgame){
-		glDrawPixels(Width2,Height2,GL_RGB,GL_UNSIGNED_BYTE,Welcome_img);
-	}
-    
 }
 
 float bar1[3] = { -20,12,0 };
@@ -613,12 +509,6 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	welcomepage();
-	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45, 1, 1, 100);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
 	showtext();
 	// Particle camera is on
 	if (partcam != -1)
@@ -662,9 +552,7 @@ void display(void)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[4]);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[4]);
 	drawBox(bar4, 2, 1, float(Player4.points) /30);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[5]);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[5]);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[5]);
+
 	glBindTexture(GL_TEXTURE_2D, Texture[0]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
@@ -742,7 +630,7 @@ void deleteParticle(int i)
 
 /* move all particles */
 void moveAll()
-{	if (startgame){
+{
 	for (int i = 0; i < parts.size(); i++)
 	{
 		// Negative age to delay particle creation, so particles with negative age won't be moved
@@ -770,26 +658,12 @@ void moveAll()
 		{
 			parts[i].direction[1] = -parts[i].direction[1];
 			int gridNum = grid::getNumber(parts[i].position[0],parts[i].position[2]);
-			if (Grids[gridNum].mat != parts[i].mat){
-				if(Grids[gridNum-1].mat == parts[i].mat ||Grids[gridNum+1].mat == parts[i].mat){
-					parts[i].direction[2] = -parts[i].direction[2];
-				}
-				if(Grids[gridNum-40].mat == parts[i].mat ||Grids[gridNum+40].mat == parts[i].mat){
-					parts[i].direction[0] = -parts[i].direction[0];
-				}
-				if(Grids[gridNum-1].mat != parts[i].mat &&Grids[gridNum+1].mat != parts[i].mat
-					&&Grids[gridNum-40].mat != parts[i].mat &&Grids[gridNum+40].mat != parts[i].mat){
-						parts[i].direction[2] = -parts[i].direction[2];
-						parts[i].direction[0] = -parts[i].direction[0];
-					}
-			}
 			Grids[gridNum].mat = parts[i].mat; // Floor coloring
 			
 			// Decrease its speed unless it is permanent paritcle.
 			if (!parts[i].is_permanent)
 				parts[i].speed *= 0.7;
 		}
-	}
 	}
 }
 
@@ -804,7 +678,7 @@ void FPS(int val)
 	{
 		if (!parts[i].is_permanent)
 			parts[i].age++;
-		if (parts[i].age >= Particle::DEFAULT_LIFE_DURATION)
+		if (parts[i].age >= DEFAULT_LIFE_DURATION)
 		{
 			if (parts[i].size > 0.3)
 			{
@@ -837,35 +711,16 @@ void Mouse(int btn, int state, int x, int y){
 	glutPostRedisplay();
 }
 
-void START(){
-	startgame = true;
-	std::cout<<"GAME STARTS!!!"<<endl;
-}
-
-Handler Here = {
-    400,
-    460,
-    400,
-	380,
-    START
-};
-
-void handleMouse(int button, int state, int x, int y) {
-
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && startgame == false){
-        mouseHandler.leftClickDown(x,800 - y);
-    }
-}
 /* main function - program entry point */
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);		//starts up GLUT
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH );
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH );
     
 	
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
-	mouseHandler.addHandler(&Here);
+
 	glutCreateWindow("marble war");	//creates the window
 	
 	GenFloor();
@@ -874,7 +729,6 @@ int main(int argc, char** argv)
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
 	glutMouseFunc(Mouse);
-	glutMouseFunc(handleMouse);	
 	glutTimerFunc(17, FPS, 0);
 	
 	glEnable(GL_DEPTH_TEST);
