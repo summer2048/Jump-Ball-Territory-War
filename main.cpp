@@ -740,7 +740,7 @@ void deleteParticle(int i)
 
 /* move all particles */
 void moveAll()
-{
+{	if (startgame){
 	for (int i = 0; i < parts.size(); i++)
 	{
 		// Negative age to delay particle creation, so particles with negative age won't be moved
@@ -786,6 +786,7 @@ void moveAll()
 			if (!parts[i].is_permanent)
 				parts[i].speed *= 0.7;
 		}
+	}
 	}
 }
 
