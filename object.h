@@ -1,7 +1,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-
 #define Cylinder 0
 #define Cube 1
 
@@ -16,6 +15,7 @@ public:
     float UpperRight[3]; // Maximal x,y,z of surronding box
     float distToMouseRay; // Set it to -1 if no intersection
     int counter;
+    int colddown;
 
 	object(float pX, float pY, float pZ, int type);
     void resetCorner();

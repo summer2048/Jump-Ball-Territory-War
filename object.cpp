@@ -10,12 +10,21 @@ object::object(float pX, float pY, float pZ, int type)
 	, UpperRight {0,0,0}
 	, distToMouseRay(-1)
     , counter(0)
+    , colddown(0)
 {
 	initCorner();
 }
 
 void object::initCorner(){
 	switch (type){
+        case Cylinder:
+            DownLeft[0] = position[0] - size;
+			DownLeft[1] = position[1];
+			DownLeft[2] = position[2] - size;
+			UpperRight[0] = position[0] + size;
+			UpperRight[1] = position[1] + size;
+			UpperRight[2] = position[2] + size;
+			break;
 		default:
 			DownLeft[0] = position[0] - size/2;
 			DownLeft[1] = position[1] - size/2;
@@ -40,5 +49,6 @@ void object::resetCorner(){
 }
 
 void object::getHit(int mat){
+    colddown = 60;
     /* Add reaction here */
 }
