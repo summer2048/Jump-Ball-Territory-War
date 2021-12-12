@@ -403,21 +403,15 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'f':
 	case 'F':
-<<<<<<< HEAD
 		if (startgame){
 			fountain((randf()-0.5)*15,0,(randf()-0.5)*15);
 		}
 		break;
-
-	case 'r':
 	case 'R':
 		while (int i = parts.size() > 4)
 		{
 			parts.pop_back();
 		}
-=======
-		fountain((randf()-0.5)*15,0,(randf()-0.5)*15, rand()%4+1);
->>>>>>> 1593ee73dc254aa3a58400773cd061a94437e8ed
 		break;
 	case 'b':
 	case 'B':
