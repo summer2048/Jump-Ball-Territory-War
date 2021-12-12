@@ -322,22 +322,6 @@ void GenFloor(){
 //Used to draw the grid floor
 void drawgridfloor(){
 	for (unsigned int i = 0; i <= Grids.size(); i++){
-		if (i == GetNumber(Player1.basex,Player1.basez)){
-			Grids[i].mat = Player1.mat;
-			
-		}
-		if (i == GetNumber(Player2.basex,Player2.basez)){
-			Grids[i].mat = Player2.mat;
-			
-		}
-		if (i == GetNumber(Player3.basex,Player3.basez)){
-			Grids[i].mat = Player3.mat;
-			
-		}
-		if (i == GetNumber(Player4.basex,Player4.basez)){
-			Grids[i].mat = Player4.mat;
-			
-		}
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[Grids[i].mat]);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[Grids[i].mat]);
@@ -691,25 +675,6 @@ void display(void)
 	
 }
 
-//void drawbar(void) {
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[1]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[1]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[1]);
-//	drawBox(bar1, 2, 1, 6);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[2]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[2]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[2]);
-//	drawBox(bar2, 2, 1, 10);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[3]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[3]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[3]);
-//	drawBox(bar3, 2, 1, 4);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[4]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[4]);
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[4]);
-//	drawBox(bar4, 2, 1, 12);
-//
-//}
 void countScore(void) {
 	vector<grid>::iterator i;
 	Player1.points = 0;
