@@ -9,6 +9,7 @@ class Particle
 {
 public:
 	bool is_permanent;
+	bool is_firework;
 	float position[3];
 	float direction[3];
 	float speed;
