@@ -435,7 +435,7 @@ void keyboard(unsigned char key, int x, int y)
 		clear();
 		break;
 	case 'o':
-		objects.push_back(object(0, 0, 0, 0));
+		objects.push_back(object(0, 0, 0, rand()%2));
 		break;
 	case 'p':
 		partcam = -1;
@@ -688,6 +688,9 @@ void drawObjects()
 		case Cylinder:
 			glutSolidCylinder(objects[i].size, objects[i].size, 16, 16);
 			break;
+		case Cube:
+			glutSolidCube(objects[i].size);
+			break;
 		default:
 			cout << "Fail to draw" << endl;
 			break;
@@ -822,6 +825,12 @@ void getHit(object obj, Particle part)
 	{
 	case Cylinder:
 		firework(part.position[0], part.position[2], part.mat);
+		break;
+	case Cube:
+		fountain(part.position[0], 0, part.position[2], part.mat);
+		break;
+	default:
+		cout << "Fail to call hit func." << endl;
 	}
 }
 
@@ -873,6 +882,7 @@ void moveAll()
 					if (pow(x, 2) + pow(y, 2) + pow(z, 2) < parts[i].size + objects[j].size && objects[j].colddown == 0)
 					{
 						// Collision is detected
+						objects[j].colddown = 60;
 						objects[i].getHit(parts[i].mat);
 						getHit(objects[j], parts[i]);
 						parts[i].direction[2] = -parts[i].direction[2];
