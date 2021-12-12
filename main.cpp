@@ -204,6 +204,7 @@ void firework(float x, float z)
 	newPart.age = 60;
 	newPart.speed = 0.1;
 	newPart.size = 0.3;
+	newPart.is_firework = true;
 	parts.push_back(newPart);
 }
 
@@ -226,18 +227,19 @@ void firework1(float dx, float dy, float dz, int mat)
 }
 
 /* draw fountain at position (px, py, pz) */
-void fountain(int px = 0, int py = 0, int pz = 0)
+void fountain(int px = 0, int py = 0, int pz = 0, int mat = 0)
 {
 	for (int i = 0; i < 30; i++)
 	{
-		float x = randf() - 0.5;
-		float z = randf() - 0.5;
+		float x = (randf() - 0.5)*0.5;
+		float z = (randf() - 0.5)*0.5;
 		float y = 20;
 		float length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 		Particle newpart(px, py, pz, x / length, y / length, z / length);
 		newpart.size = 0.2;
 		newpart.speed = 0.5;
 		newpart.age = -3*i;
+		newpart.mat = mat;
 		parts.push_back(newpart);
 	}
 }
@@ -372,6 +374,11 @@ void Intersectiontest(){
 	}
 	
 }
+void clear(){
+	for (int i = 0; i< Grids.size();i++){
+		Grids[i].mat = 0;
+	}
+}
 
 void keyboard(unsigned char key, int x, int y)
 {
@@ -386,20 +393,15 @@ void keyboard(unsigned char key, int x, int y)
 		case 'a':
 		firework(rand() % 10, rand() % 10);
 		break;
+		case 'r':
+			clear();
+			break;
 	case 'p':
 		partcam = -1;
 		break;
 	case 'f':
 	case 'F':
-		fountain((randf()-0.5)*15,0,(randf()-0.5)*15);
-		break;
-
-	case 'r':
-	case 'R':
-		while (int i = parts.size() > 4)
-		{
-			parts.pop_back();
-		}
+		fountain((randf()-0.5)*15,0,(randf()-0.5)*15, rand()%4+1);
 		break;
 	case 'b':
 	case 'B':
@@ -720,12 +722,16 @@ void moveAll()
 	{
 		float pX, pY, pZ;
 		// Negative age to delay particle creation, so particles with negative age won't be moved
+		if (parts[i].is_firework){
+			parts[i].position[1] += parts[i].direction[1] * parts[i].speed;
+			continue;
+		}
 		if (parts[i].age < 0) continue;
 		pX = parts[i].position[0] + parts[i].direction[0] * parts[i].speed;
 		pY = parts[i].position[1] + parts[i].direction[1] * parts[i].speed;
 		pZ = parts[i].position[2] + parts[i].direction[2] * parts[i].speed;
 		float x, y, z, length;
-		x = parts[i].direction[0] * parts[i].speed;
+		x = parts[i].direction[0] * parts[i].speed + 0.01*(randf()-0.5f);
 		y = parts[i].direction[1] * parts[i].speed - 0.1;
 		z = parts[i].direction[2] * parts[i].speed + 0.01*(randf()-0.5f);
 		length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
@@ -760,8 +766,12 @@ void moveAll()
 			}
 
 			// Decrease its speed unless it is permanent paritcle.
-			if (!parts[i].is_permanent)
-				parts[i].speed *= 0.7;
+			if (!parts[i].is_permanent){
+				if (parts[i].speed > 0.05)
+					parts[i].speed = 0.6 * (parts[i].speed - 0.05) + 0.03;
+				else 
+					parts[i].speed = 0;
+			}
 		}
 		parts[i].position[0] += parts[i].direction[0] * parts[i].speed;
 		parts[i].position[1] += parts[i].direction[1] * parts[i].speed;
@@ -785,7 +795,7 @@ void FPS(int val)
 			parts[i].age+=gameSpeed;
 		if (parts[i].age >= DEFAULT_LIFE_DURATION)
 		{
-			if (parts[i].size > 0.3)
+			if (parts[i].is_firework)
 			{
 				firework1(parts[i].position[0], parts[i].position[1], parts[i].position[2], parts[i].mat);
 			}
