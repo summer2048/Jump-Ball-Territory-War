@@ -70,6 +70,12 @@ int partcam = -1;
 vector<Particle> parts;
 vector<object> objects;
 
+/* Object ray pick data*/
+int picked_object = -1;
+double *m_start = new double[3];
+double *m_end = new double[3];
+double *Rd = new double[3];
+
 // return a random float in [0,1)
 float randf()
 {
@@ -200,13 +206,14 @@ int GetNumber(float x, float z){	//return the current number of grid using x and
 }
 
 /* draw firework at position (x, 0, z) */
-void firework(float x, float z)
+void firework(float x, float z, int mat)
 {
 	Particle newPart(x, 0, z, 0, 1, 0);
 	newPart.age = 60;
 	newPart.speed = 0.1;
 	newPart.size = 0.3;
 	newPart.is_firework = true;
+	newPart.mat = mat;
 	parts.push_back(newPart);
 }
 
@@ -371,7 +378,7 @@ void Intersectiontest(){
 		if(IntersectX > 28 && IntersectX < 32 &&
 		IntersectY > 8 && IntersectY < 12 &&
 		IntersectZ > -22 && IntersectZ < -18){
-			firework(rand() % 10, rand() % 10);
+			firework(rand() % 10, rand() % 10,0);
 		}
 	}
 }
@@ -384,7 +391,6 @@ void clear(){
 
 void keyboard(unsigned char key, int x, int y)
 {
-
 	/* key presses move the cube, if it isn't at the extents (hard-coded here) */
 	switch (key)
 	{
@@ -394,7 +400,7 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		case 'a':
 		if (startgame){
-			firework(rand() % 10, rand() % 10);
+			firework(rand() % 10, rand() % 10,0);
 		}
 		break;
 		case 'r':
@@ -427,6 +433,23 @@ void keyboard(unsigned char key, int x, int y)
 		glDisable(GL_BLEND);
 	}
 		break;
+	case 'i':
+		if (picked_object != -1)
+			objects[picked_object].move(0,0,-1);
+		break;
+	case 'k':
+		if (picked_object != -1)
+			objects[picked_object].move(0,0,1);
+		break;
+	case 'j':
+		if (picked_object != -1)
+			objects[picked_object].move(-1,0,0);
+		break;
+	case 'l':
+		if (picked_object != -1)
+			objects[picked_object].move(1,0,0);
+		break;
+
 	case 49:
 	case 50:
 	case 51:
@@ -618,6 +641,7 @@ void drawObjects(){
 				cout << "Fail to draw" << endl;
 				break;
 		}
+		glPopMatrix();
 	}
 }
 
@@ -730,6 +754,13 @@ void deleteParticle(int i)
 	parts.pop_back();
 }
 
+void getHit(object obj, Particle part){
+	switch (obj.type){
+		case Cylinder:
+			firework(part.position[0],part.position[2],part.mat);
+	}
+}
+
 /* move all particles */
 void moveAll()
 {	if (startgame){
@@ -770,6 +801,7 @@ void moveAll()
 				if (pow(x,2)+pow(y,2)+pow(z,2) < parts[i].size + objects[j].size){
 					// Collision is detected
 					objects[i].getHit(parts[i].mat);
+					getHit(objects[j], parts[i]);
 					parts[i].direction[2] = -parts[i].direction[2];
 					parts[i].direction[0] = -parts[i].direction[0];
 				}
@@ -811,6 +843,69 @@ void moveAll()
 	}
 }
 
+/* Check if mouse ray intesect down left 3 planes */
+void intersectDownLeft(object& object, int plane) {
+    float planeConst, d;
+    planeConst = object.DownLeft[plane];
+    if (Rd[plane] == 0) return;
+    d = (planeConst - m_start[plane]) / Rd[plane];
+    if (d < 0) return;
+    if (m_start[(plane + 4) % 3] + d * Rd[(plane + 4) % 3] < object.DownLeft[(plane + 4) % 3] || m_start[(plane + 4) % 3] + d * Rd[(plane + 4) % 3] > object.UpperRight[(plane + 4) % 3]) return;
+    if (m_start[(plane + 5) % 3] + d * Rd[(plane + 5) % 3] < object.DownLeft[(plane + 5) % 3] || m_start[(plane + 5) % 3] + d * Rd[(plane + 5) % 3] > object.UpperRight[(plane + 5) % 3]) return;
+    if (object.distToMouseRay < 0 || d < object.distToMouseRay) {
+        object.distToMouseRay = d;
+        return;
+    }
+}
+
+/* Check if mouse ray intesect upper right 3 planes */
+void intersectUpperRight(object& object, int plane) {
+    float planeConst, d;
+    planeConst = object.UpperRight[plane];
+    if (Rd[plane] == 0) return;
+    d = (planeConst - m_start[plane]) / Rd[plane];
+    if (d < 0) return;
+    if (m_start[(plane + 4) % 3] + d * Rd[(plane + 4) % 3] < object.DownLeft[(plane + 4) % 3] || m_start[(plane + 4) % 3] + d * Rd[(plane + 4) % 3] > object.UpperRight[(plane + 4) % 3]) return;
+    if (m_start[(plane + 5) % 3] + d * Rd[(plane + 5) % 3] < object.DownLeft[(plane + 5) % 3] || m_start[(plane + 5) % 3] + d * Rd[(plane + 5) % 3] > object.UpperRight[(plane + 5) % 3]) return;
+    if (object.distToMouseRay < 0 || d < object.distToMouseRay) {
+        object.distToMouseRay = d;
+        return;
+    }
+}
+
+
+void boxRayPick(object &obj)
+{
+    intersectDownLeft(obj, 0);
+    intersectDownLeft(obj, 1);
+    intersectDownLeft(obj, 2);
+    intersectUpperRight(obj, 0);
+    intersectUpperRight(obj, 1);
+    intersectUpperRight(obj, 2);
+}
+
+void rayPick()
+{
+    // Set disToMouseRay for exist objects
+    for (int i = 0; i < objects.size(); i++)
+    {
+        boxRayPick(objects[i]);
+    }
+
+	// Find the closest object to select
+    int idx = -1;
+    float distance = 10000;
+    for (int i = 0; i < objects.size(); i++)
+    {
+        if (objects[i].distToMouseRay > 0 && objects[i].distToMouseRay < distance)
+        {
+            idx = i;
+            distance = objects[i].distToMouseRay;
+        }
+    }
+
+    picked_object = idx;
+}
 
 /* FPS function - 60 FPS per second */
 void FPS(int val)
@@ -860,8 +955,48 @@ void Mouse(int btn, int state, int x, int y){
 	}	else {
 		Intersectiontest();
 	}
+
+    // New Raypick
+    if (state == GLUT_DOWN)
+    {
+		// Clear previous select data
+    	picked_object = -1;
+    	for (int i = 0; i < objects.size(); i++)
+    	{
+        	objects[i].distToMouseRay = -1;
+    	}
+        double matModelView[16], matProjection[16];
+        int viewport[4];
+
+        glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+        glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        double winX = (double)x;
+        double winY = viewport[3] - (double)y;
+
+        gluUnProject(winX, winY, 0.0, matModelView, matProjection,
+                     viewport, &m_start[0], &m_start[1], &m_start[2]);
+
+        gluUnProject(winX, winY, 1.0, matModelView, matProjection,
+                     viewport, &m_end[0], &m_end[1], &m_end[2]);
+
+        // Set Rd vector
+        double xDiff = m_end[0] - m_start[0];
+        double yDiff = m_end[1] - m_start[1];
+        double zDiff = m_end[2] - m_start[2];
+
+        double mag = sqrt(pow(xDiff, 2) + pow(yDiff, 2) + pow(zDiff, 2));
+
+        Rd[0] = xDiff / mag;
+        Rd[1] = yDiff / mag;
+        Rd[2] = zDiff / mag;
+
+        rayPick();
+	}
 	glutPostRedisplay();
 }
+
 void START(){
 	startgame = true;
 	std::cout<<"GAME STARTS!!!"<<endl;

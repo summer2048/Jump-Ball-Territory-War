@@ -3,6 +3,7 @@
 
 
 #define Cylinder 0
+#define Cube 1
 
 class object
 {
@@ -19,6 +20,7 @@ public:
 	object(float pX, float pY, float pZ, int type);
     void resetCorner();
     void getHit(int mat);
+    void move(float x, float y, float z);
 private:
     void initCorner();
 };

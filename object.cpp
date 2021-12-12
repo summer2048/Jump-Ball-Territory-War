@@ -27,6 +27,18 @@ void object::initCorner(){
 	}
 }
 
+void object::move(float x, float y, float z){
+    position[0] += x;
+    position[1] += y;
+    position[2] += z;
+    resetCorner();
+}
+
+void object::resetCorner(){
+    // Lazy approach
+	initCorner();
+}
+
 void object::getHit(int mat){
     /* Add reaction here */
 }
