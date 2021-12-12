@@ -384,14 +384,18 @@ void keyboard(unsigned char key, int x, int y)
 			exit (0);
 			break;
 		case 'a':
-		firework(rand() % 10, rand() % 10);
+		if (startgame){
+			firework(rand() % 10, rand() % 10);
+		}
 		break;
 	case 'p':
 		partcam = -1;
 		break;
 	case 'f':
 	case 'F':
-		fountain((randf()-0.5)*15,0,(randf()-0.5)*15);
+		if (startgame){
+			fountain((randf()-0.5)*15,0,(randf()-0.5)*15);
+		}
 		break;
 
 	case 'r':
@@ -604,14 +608,12 @@ void display(void)
 {	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	welcomepage();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45, 1, 1, 100);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
 	showtext();
+	glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 	// Particle camera is on
 	if (partcam != -1)
 	{
@@ -811,7 +813,14 @@ void Mouse(int btn, int state, int x, int y){
     }
 	MouseX = x;
 	MouseY = 800 - y;
-	Intersectiontest();
+
+	if (!startgame){
+		if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+			mouseHandler.leftClickDown(x,800 - y);
+		}
+	}	else {
+		Intersectiontest();
+	}
 	//std::cout<<MouseX<<" "<<MouseY<<endl; 
 	glutPostRedisplay();
 }
@@ -828,12 +837,7 @@ Handler Here = {
     START
 };
 
-void handleMouse(int button, int state, int x, int y) {
 
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && startgame == false){
-        mouseHandler.leftClickDown(x,800 - y);
-    }
-}
 /* main function - program entry point */
 int main(int argc, char** argv)
 {
@@ -851,8 +855,7 @@ int main(int argc, char** argv)
 	//std::cout<<Grids[800].getNumber()<<endl;	
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
-	glutMouseFunc(Mouse);
-	glutMouseFunc(handleMouse);	
+	glutMouseFunc(Mouse);	
 	glutTimerFunc(17, FPS, 0);
 	
 	glEnable(GL_DEPTH_TEST);
