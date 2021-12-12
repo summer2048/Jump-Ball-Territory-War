@@ -234,6 +234,7 @@ void fountain(int px = 0, int py = 0, int pz = 0)
 		float length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 		Particle newpart(px, py, pz, x / length, y / length, z / length);
 		newpart.size = 0.2;
+		newpart.speed = 0.5;
 		newpart.age = -3*i;
 		parts.push_back(newpart);
 	}
