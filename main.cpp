@@ -14,9 +14,11 @@
 #include "player.h"
 #include "particle.h"
 #include "object.h"
+#include "ObjectLoader.h"
 #include <math.h>
 #include <vector>
 #include <random>
+#include <map>
 #include <iostream>
 
 using namespace std; 
@@ -34,6 +36,8 @@ int Width1, Height1, Max1;
 GLubyte* Welcome_img;
 int Width2, Height2, Max2;
 unsigned int Texture[3];
+ObjectLoader obj1;
+map<string, ObjectLoader> list;
 
 int gameSpeed = 1;
 
@@ -514,6 +518,23 @@ void initParts(int inM, float inX, float inZ){
 		parts.push_back(newpart);
 }
 
+//Used to draw obj file
+void showObj(string obj){
+    glPushMatrix();
+        glBegin(GL_TRIANGLES);
+        int size = list[obj].Fvertex.size();
+        for (int i = 0; i < size; i++) {
+            triple v = list[obj].vNorm[list[obj].Fnorm[i]-1];
+            glNormal3f(v.mX, v.mY, v.mZ);
+            pairs t = list[obj].vText[list[obj].Ftext[i]-1];
+            glTexCoord2f(t.mX, t.mY);
+            triple m = list[obj].vVertex[list[obj].Fvertex[i]-1];
+            glVertex3f(m.mX, m.mY, m.mZ);
+        }
+        glEnd();
+    glPopMatrix();
+}
+
 //GLubyte wb[2] = { 0x00, 0xff };
 //GLubyte checker[512];
 void init(void)
@@ -535,6 +556,11 @@ void init(void)
 	glEnable(GL_TEXTURE_2D);
 	img_1 = LoadPPM("ppm/sky1.ppm",&Width1, &Height1, &Max1);
 	Welcome_img = LoadPPM("ppm/welcome1.ppm",&Width2, &Height2, &Max2);
+
+	ObjectLoader Obj_1;
+    Obj_1 = ObjectLoader();
+    Obj_1.loadObject("obj/heart.obj");
+    list["Obj_1"] = Obj_1;
 }
 
 /* draw particles */
@@ -719,8 +745,15 @@ void display(void)
 	glTranslatef(30,10,-20);
 	glutSolidCube(2);
 	glPopMatrix();
-	
 	drawObjects();
+
+	glPushMatrix();
+	glTranslatef(0,10,0);
+	glRotatef(180,0,1,0);
+	glScalef(0.3,0.3,0.3);
+	showObj("Obj_1");
+	glPopMatrix();
+
 	glutSwapBuffers();
 	
 }
