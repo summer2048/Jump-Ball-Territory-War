@@ -34,6 +34,8 @@ GLubyte* Welcome_img;
 int Width2, Height2, Max2;
 unsigned int Texture[3];
 
+int gameSpeed = 1;
+
 // TOBE FIXED 2. two blue balls have similar color, have best to change one of it.
 float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1},{ 0.2295f, 0.08825f, 0.0275f, 1.0f },{ 0.5, 0.4, 0.3, 0.2 },{ 0.05f,0.05f,0.0f,1.0f }};
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0},{0.5508f, 0.2118f, 0.066f, 1.0f },{0.396f, 0.74151f, 0.69102f, 0.8f },{0.5f,0.5f,0.4f,1.0f}};
@@ -416,6 +418,13 @@ void keyboard(unsigned char key, int x, int y)
 	case 54:
 		partcam = key - 49;
 		break;
+	case '+':
+		gameSpeed += 1;
+		break;
+	case '-':
+		if (gameSpeed > 1)
+			gameSpeed -= 1;
+		break;
 	}		
 	glutPostRedisplay();
 }
@@ -761,7 +770,9 @@ void moveAll()
 void FPS(int val)
 {
 	countScore();
-	moveAll();
+	for (int i = 1; i <= gameSpeed; i++){
+		moveAll();
+	}
 	glutPostRedisplay();
 	for (int i = 0; i < parts.size(); i++)
 	{
