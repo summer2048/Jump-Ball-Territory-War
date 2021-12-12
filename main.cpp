@@ -718,31 +718,32 @@ void moveAll()
 {	if (startgame){
 	for (int i = 0; i < parts.size(); i++)
 	{
+		float pX, pY, pZ;
 		// Negative age to delay particle creation, so particles with negative age won't be moved
 		if (parts[i].age < 0) continue;
-		parts[i].position[0] += parts[i].direction[0] * parts[i].speed;
-		parts[i].position[1] += parts[i].direction[1] * parts[i].speed;
-		parts[i].position[2] += parts[i].direction[2] * parts[i].speed;
+		pX = parts[i].position[0] + parts[i].direction[0] * parts[i].speed;
+		pY = parts[i].position[1] + parts[i].direction[1] * parts[i].speed;
+		pZ = parts[i].position[2] + parts[i].direction[2] * parts[i].speed;
 		float x, y, z, length;
 		x = parts[i].direction[0] * parts[i].speed;
 		y = parts[i].direction[1] * parts[i].speed - 0.1;
-		z = parts[i].direction[2] * parts[i].speed;
+		z = parts[i].direction[2] * parts[i].speed + 0.01*(randf()-0.5f);
 		length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 		parts[i].direction[0] = x / length;
 		parts[i].direction[1] = y / length;
 		parts[i].direction[2] = z / length;
 		// Change direction if it reaches boundary.
-		if (parts[i].position[0] > 20 || parts[i].position[0] < -20){
+		if (pX > 20 || pX < -20){
 			parts[i].direction[0] = -parts[i].direction[0];
 		}
-		if (parts[i].position[2] > 20 || parts[i].position[2] < -20){
+		if (pZ > 20 || pZ < -20){
 			parts[i].direction[2] = -parts[i].direction[2];
 		}
 		// Change direction if it reaches the floor.
-		if (parts[i].position[1] < 0 && parts[i].direction[1] < 0)
+		if (pY < 0 && pY < 0)
 		{
 			parts[i].direction[1] = -parts[i].direction[1];
-			int gridNum = grid::getNumber(parts[i].position[0],parts[i].position[2]);
+			int gridNum = grid::getNumber(pX,pZ);
 			if (Grids[gridNum].mat != parts[i].mat){
 				if(Grids[gridNum-1].mat == parts[i].mat ||Grids[gridNum+1].mat == parts[i].mat){
 					parts[i].direction[2] = -parts[i].direction[2];
@@ -755,12 +756,16 @@ void moveAll()
 						parts[i].direction[2] = -parts[i].direction[2];
 						parts[i].direction[0] = -parts[i].direction[0];
 					}
+				Grids[gridNum].mat = parts[i].mat;
 			}
-			Grids[gridNum].mat = parts[i].mat; // Floor coloring
+
 			// Decrease its speed unless it is permanent paritcle.
 			if (!parts[i].is_permanent)
 				parts[i].speed *= 0.7;
 		}
+		parts[i].position[0] += parts[i].direction[0] * parts[i].speed;
+		parts[i].position[1] += parts[i].direction[1] * parts[i].speed;
+		parts[i].position[2] += parts[i].direction[2] * parts[i].speed;
 	}
 	}
 }
@@ -777,7 +782,7 @@ void FPS(int val)
 	for (int i = 0; i < parts.size(); i++)
 	{
 		if (!parts[i].is_permanent)
-			parts[i].age++;
+			parts[i].age+=gameSpeed;
 		if (parts[i].age >= DEFAULT_LIFE_DURATION)
 		{
 			if (parts[i].size > 0.3)
