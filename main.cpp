@@ -13,6 +13,7 @@
 #include "terrain.h"
 #include "player.h"
 #include "particle.h"
+#include "object.h"
 #include <math.h>
 #include <vector>
 #include <random>
@@ -67,6 +68,7 @@ float spec2[4] = {1, 0.5, 0.5, 1};
 int partcam = -1;
 
 vector<Particle> parts;
+vector<object> objects;
 
 // return a random float in [0,1)
 float randf()
@@ -372,8 +374,8 @@ void Intersectiontest(){
 			firework(rand() % 10, rand() % 10);
 		}
 	}
-	
 }
+
 void clear(){
 	for (int i = 0; i< Grids.size();i++){
 		Grids[i].mat = 0;
@@ -397,6 +399,9 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 		case 'r':
 			clear();
+			break;
+		case 'o':
+			objects.push_back(object(0,0,0,0));
 			break;
 	case 'p':
 		partcam = -1;
@@ -442,7 +447,7 @@ void keyboard(unsigned char key, int x, int y)
 }
 
 void SpecialKey(int key, int x, int y){
-	float radius = sqrt(2 * pow(30,2));// TOBE FIXED 1. Special key rotation is not smooth at first use.
+	float radius = sqrt(2 * pow(30,2));
 	switch (key)
 	{
 	//camera rotate about y axis
@@ -450,26 +455,22 @@ void SpecialKey(int key, int x, int y){
 		scaley = scaley + 0.1;
 		camPos[0] = radius * sin(scaley);
 		camPos[2] = radius * cos(scaley);
-		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	case GLUT_KEY_RIGHT:
 		scaley = scaley - 0.1;
 		camPos[0] = radius * sin(scaley);
 		camPos[2] = radius * cos(scaley);
-		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	//camera rotate about x axis
 	case GLUT_KEY_UP:
 		scalex = scalex + 0.1;
 		camPos[1] = radius * sin(scalex);
 		camPos[2] = radius * cos(scalex);
-		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	case GLUT_KEY_DOWN:
 		scalex = scalex - 0.1;
 		camPos[1] = radius * sin(scalex);
 		camPos[2] = radius * cos(scalex);
-		//std::cout<<camPos[0]<<" "<<camPos[1]<<" "<<camPos[2]<<endl;
 		break;
 	}
 	glutPostRedisplay();
@@ -507,12 +508,6 @@ void init(void)
 	initParts(2,18.5,18.5);
 	initParts(3,-18.5,-18.5);
 	initParts(4,18.5,-18.5);
-	/*int i, j; 
-	for (i = 0; i < 64; i++) {
-		for (j = 0; j < 8; j++) {
-			checker[i * 8 + j] = wb[(i / 8 + j) % 2];
-		}
-	} */
 
 	glEnable(GL_TEXTURE_2D);
 	img_1 = LoadPPM("ppm/sky1.ppm",&Width1, &Height1, &Max1);
@@ -609,9 +604,24 @@ float bar1[3] = { -20,12,0 };
 float bar2[3] = { -20,10,0 };
 float bar3[3] = { -20,8,0 };
 float bar4[3] = { -20,6,0 };
-/* display function - GLUT display callback function
- *		clears the screen, sets the camera position, draws the ground plane and movable box
- */
+
+void drawObjects(){
+	for (int i = 0; i < objects.size(); i++){
+		glPushMatrix();
+		glTranslatef(objects[i].position[0],objects[i].position[1], objects[i].position[2]);
+		glRotatef(270,1,0,0);
+		switch (objects[i].type){
+			case Cylinder:
+				glutSolidCylinder(objects[i].size,objects[i].size,16,16);
+				break;
+			default:
+				cout << "Fail to draw" << endl;
+				break;
+		}
+	}
+}
+
+/* display function  */
 void display(void)
 {	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -686,10 +696,7 @@ void display(void)
 	glutSolidCube(2);
 	glPopMatrix();
 	
-	//glPixelZoom(-0.5f, -0.5f);
-	//glRasterPos2i(1, 1);
-	//glCopyPixels(10, -10,20,20 GL_RGB);
-	//cout << Player1.points << endl;
+	drawObjects();
 	glutSwapBuffers();
 	
 }
@@ -753,6 +760,22 @@ void moveAll()
 		if (pZ > 20 || pZ < -20){
 			parts[i].direction[2] = -parts[i].direction[2];
 		}
+
+		// Object collision detect
+		if (parts[i].is_permanent){
+			for (int j = 0; j < objects.size(); j++){
+				float x = parts[i].position[0] - objects[j].position[0];
+				float y = parts[i].position[1] - objects[j].position[1];
+				float z = parts[i].position[2] - objects[j].position[2];
+				if (pow(x,2)+pow(y,2)+pow(z,2) < parts[i].size + objects[j].size){
+					// Collision is detected
+					objects[i].getHit(parts[i].mat);
+					parts[i].direction[2] = -parts[i].direction[2];
+					parts[i].direction[0] = -parts[i].direction[0];
+				}
+			}
+		}
+
 		// Change direction if it reaches the floor.
 		if (pY < 0 && pY < 0)
 		{
@@ -837,7 +860,6 @@ void Mouse(int btn, int state, int x, int y){
 	}	else {
 		Intersectiontest();
 	}
-	//std::cout<<MouseX<<" "<<MouseY<<endl; 
 	glutPostRedisplay();
 }
 void START(){
@@ -854,21 +876,20 @@ Handler Here = {
 };
 
 
-/* main function - program entry point */
+/* main function */
 int main(int argc, char** argv)
 {
-	glutInit(&argc, argv);		//starts up GLUT
+	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH );
     
 	
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
 	mouseHandler.addHandler(&Here);
-	glutCreateWindow("marble war");	//creates the window
+	glutCreateWindow("marble war");
 	
 	GenFloor();
-	glutDisplayFunc(display);	//registers "display" as the display callback function
-	//std::cout<<Grids[800].getNumber()<<endl;	
+	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKey);
 	glutMouseFunc(Mouse);	
@@ -884,7 +905,7 @@ int main(int argc, char** argv)
     
 	init();
 	
-	glutMainLoop();				//starts the event loop
+	glutMainLoop();
 
-	return(0);					//return may not be necessary on all compilers
+	return(0);
 }
