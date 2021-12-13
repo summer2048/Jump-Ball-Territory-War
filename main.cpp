@@ -36,6 +36,8 @@ GLubyte *Welcome_img;
 int Width2, Height2, Max2;
 GLubyte* CrossSkill_img;
 int Width3, Height3, Max3;
+GLubyte *End_img;
+int Width4, Height4, Max4;
 unsigned int Texture[3];
 ObjectLoader obj1;
 map<string, ObjectLoader> list;
@@ -61,6 +63,7 @@ bool RightButton = false;  // track right mouse status
 bool middleButton = false; //track middle mouse status
 bool startgame = false;
 bool freemode = false;
+bool endgame = false;
 vector<grid> Grids;
 int angle = 0;	//heart angle
 float heartx = 0.0;
@@ -186,7 +189,7 @@ GLubyte *LoadPPM(char *file, int *width, int *height, int *max)
 		printf("%s is not a PPM file!\n", file);
 		exit(0);
 	}
-	printf("%s is a PPM file\n", file);
+	//printf("%s is a PPM file\n", file);
 	fscanf(fd, "%c", &c);
 	while (c == '#')
 	{
@@ -502,16 +505,22 @@ void keyboard(unsigned char key, int x, int y)
 			parts.pop_back();
 		}
 		break;
+	case 'c':
+	case 'C':
+		freemode = !freemode;
+		break;
 	case 'b':
-	case 'B':
-		blend = !blend;
-		if (blend)
-		{
-			glEnable(GL_BLEND);
+		endgame = !endgame;
+		break;
+	case 'Y':
+		if (endgame){
+			endgame = false;
+			startgame = false;
 		}
-		else
-		{
-			glDisable(GL_BLEND);
+		break;
+	case 'n':
+		if (endgame){
+			exit(0);
 		}
 		break;
 	case 49:
@@ -624,8 +633,9 @@ void init(void)
 
 	glEnable(GL_TEXTURE_2D);
 	img_1 = LoadPPM("ppm/sky1.ppm", &Width1, &Height1, &Max1);
-	Welcome_img = LoadPPM("ppm/welcome1.ppm", &Width2, &Height2, &Max2);
+	Welcome_img = LoadPPM("ppm/welcome.ppm", &Width2, &Height2, &Max2);
 	CrossSkill_img = LoadPPM("ppm/player.ppm", &Width3, &Height3, &Max3);
+	End_img = LoadPPM("ppm/end.ppm", &Width4, &Height4, &Max4);
 	ObjectLoader Obj_1;
 	Obj_1 = ObjectLoader();
 	Obj_1.loadObject("obj/Saturn.obj");
@@ -727,6 +737,9 @@ void welcomepage()
 	if (!startgame)
 	{
 		glDrawPixels(Width2, Height2, GL_RGB, GL_UNSIGNED_BYTE, Welcome_img);
+	}
+	if (endgame){
+		glDrawPixels(Width4, Height4, GL_RGB, GL_UNSIGNED_BYTE, End_img);
 	}
 }
 void CrossSkillpage() {
@@ -1156,6 +1169,7 @@ void Mouse(int btn, int state, int x, int y)
 		RightButton = false;
 		middleButton = false;
 	}
+	
 	if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 		LeftButton = true;
@@ -1165,6 +1179,7 @@ void Mouse(int btn, int state, int x, int y)
 		}
 		//std::cout << x << y << endl;
 	}
+	
 	if (btn == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
 	{
 		RightButton = true;
@@ -1180,7 +1195,8 @@ void Mouse(int btn, int state, int x, int y)
 	{
 		if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			mouseHandler.leftClickDown(x, 800 - y);
+			mouseHandler.leftClickDown(x, 800 - y);\
+			//std::cout<<MouseX<<" "<<MouseY<<endl; 
 		}
 	}
 	else
@@ -1262,12 +1278,18 @@ void wheel(int wheel, int dir, int x, int y) {
 
 	glutPostRedisplay();
 }
-void START()
+void STARTfree()
 {
 	startgame = true;
-	std::cout << "GAME STARTS!!!" << endl;
+	freemode = true;
+	std::cout << "GAME STARTS!!! Feel free to enjoy!!" << endl;
 }
-
+void STARTmatch()
+{
+	startgame = true;
+	freemode = false;
+	std::cout << "GAME STARTS!!! Win the game!!" << endl;
+}
 void CrossSkill1() {
 	std::cout << "Player1 skill" << endl;
 	vector<grid>::iterator i;
@@ -1322,12 +1344,19 @@ void CrossSkill4() {
 		
 	}
 }
-Handler Here = {
-	400,
-	460,
+Handler freemode1 = {
+	300,
+	430,
 	400,
 	380,
-	START};
+	STARTfree};
+
+Handler matchmode = {
+	485,
+	630,
+	400,
+	380,
+	STARTmatch};
 Handler Cross1 = {
 	670,720,800-12,800-38,CrossSkill1
 };
@@ -1348,7 +1377,8 @@ int main(int argc, char **argv)
 
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
-	mouseHandler.addHandler(&Here);
+	mouseHandler.addHandler(&freemode1);
+	mouseHandler.addHandler(&matchmode);
 	mouseHandler.addHandler(&Cross1);
 	mouseHandler.addHandler(&Cross2);
 	mouseHandler.addHandler(&Cross3);
