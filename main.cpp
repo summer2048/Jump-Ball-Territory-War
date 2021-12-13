@@ -27,7 +27,7 @@ std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<float> dis(0.0, 0.5);
 
-float camPos[] = {0, 60, 42};
+
 float upPos[] = {0, 1, 0};
 
 GLubyte *img_1;
@@ -44,9 +44,13 @@ int gameSpeed = 1;
 float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1}, {0.2295f, 0.08825f, 0.0275f, 1.0f}, {0.5, 0.4, 0.3, 0.2}, {0.05f, 0.05f, 0.0f, 1.0f}};
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}, {0.5508f, 0.2118f, 0.066f, 1.0f}, {0.396f, 0.74151f, 0.69102f, 0.8f}, {0.5f, 0.5f, 0.4f, 1.0f}};
 float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0.580594f, 0.223257f, 0.0695701f, 1.0f}, {0.297254f, 0.30829f, 0.306678f, 0.8f}, {0.7f, 0.7f, 0.04f, 1.0f}};
+/*camera scale*/
+float radius = 100;
+float scaley = 60;
+float scalex = 60;
+float pi = 3.1415926536f;
+float camPos[] = { (float)(radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) , (float)(radius * cos(scaley * (pi / 180.0))) , (float)(radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) };
 
-float scaley = 0;
-float scalex = 0;
 bool blend = false;
 int MouseX = 0;			   //Mouse position X
 int MouseY = 0;			   //Mouse position Y
@@ -486,32 +490,37 @@ void keyboard(unsigned char key, int x, int y)
 
 void SpecialKey(int key, int x, int y)
 {
-	float radius = sqrt(2 * pow(30, 2));
+	
 	switch (key)
 	{
-	//camera rotate about y axis
-	case GLUT_KEY_LEFT:
-		scaley = scaley + 0.1;
-		camPos[0] = radius * sin(scaley);
-		camPos[2] = radius * cos(scaley);
-		break;
-	case GLUT_KEY_RIGHT:
-		scaley = scaley - 0.1;
-		camPos[0] = radius * sin(scaley);
-		camPos[2] = radius * cos(scaley);
-		break;
-	//camera rotate about x axis
+	
 	case GLUT_KEY_UP:
-		scalex = scalex + 0.1;
-		camPos[1] = radius * sin(scalex);
-		camPos[2] = radius * cos(scalex);
+		if (scaley >= 30) {
+			scaley = scaley - 2;
+		}
+		break;
+	case GLUT_KEY_LEFT:
+		scalex = scalex + 5;
+		if (scalex >= 180) {
+			scalex -= 360;
+		};
 		break;
 	case GLUT_KEY_DOWN:
-		scalex = scalex - 0.1;
-		camPos[1] = radius * sin(scalex);
-		camPos[2] = radius * cos(scalex);
+		if (scaley <= 150) {
+			scaley = scaley + 2;
+		}
+		break;
+	case GLUT_KEY_RIGHT:
+		scalex = scalex - 5;
+		if (scalex <= -180) {
+			scalex += 360;
+		}
 		break;
 	}
+	camPos[0] = radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0));
+	camPos[1] = radius * cos(scaley * (pi / 180.0));
+	camPos[2] = radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0));
+
 	glutPostRedisplay();
 }
 
@@ -1122,7 +1131,19 @@ void Mouse(int btn, int state, int x, int y)
 		}
 	}
 }
+void wheel(int wheel, int dir, int x, int y) {
+	if (dir > 0) {
+		radius = max(10.0f, radius - 3);
+	}
+	else if (dir < 0) {
+		radius = min(150.0f, radius + 3);
+	}
+	camPos[0] = radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0));
+	camPos[1] = radius * cos(scaley * (pi / 180.0));
+	camPos[2] = radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0));
 
+	glutPostRedisplay();
+}
 void START()
 {
 	startgame = true;
@@ -1153,7 +1174,7 @@ int main(int argc, char **argv)
 	glutSpecialFunc(SpecialKey);
 	glutMouseFunc(Mouse);
 	glutTimerFunc(17, FPS, 0);
-
+	glutMouseWheelFunc(wheel);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_DST_COLOR);
