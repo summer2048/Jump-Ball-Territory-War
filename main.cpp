@@ -34,6 +34,8 @@ GLubyte *img_1;
 int Width1, Height1, Max1;
 GLubyte *Welcome_img;
 int Width2, Height2, Max2;
+GLubyte* CrossSkill_img;
+int Width3, Height3, Max3;
 unsigned int Texture[3];
 ObjectLoader obj1;
 map<string, ObjectLoader> list;
@@ -580,7 +582,7 @@ void init(void)
 	glEnable(GL_TEXTURE_2D);
 	img_1 = LoadPPM("ppm/sky1.ppm", &Width1, &Height1, &Max1);
 	Welcome_img = LoadPPM("ppm/welcome1.ppm", &Width2, &Height2, &Max2);
-
+	CrossSkill_img = LoadPPM("ppm/player.ppm", &Width3, &Height3, &Max3);
 	ObjectLoader Obj_1;
 	Obj_1 = ObjectLoader();
 	Obj_1.loadObject("obj/heart.obj");
@@ -679,6 +681,18 @@ void welcomepage()
 	{
 		glDrawPixels(Width2, Height2, GL_RGB, GL_UNSIGNED_BYTE, Welcome_img);
 	}
+}
+void CrossSkillpage() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, 800, 0, 800);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRasterPos2i(410 + Width3, 600);
+	glPixelZoom(-0.7, 0.7);
+	
+	glDrawPixels(Width3, Height3, GL_RGB, GL_UNSIGNED_BYTE, CrossSkill_img);
+	
 }
 float bar1[3] = {-20, 12, 0};
 float bar2[3] = {-20, 10, 0};
@@ -790,7 +804,7 @@ void display(void)
 	glScalef(0.3, 0.3, 0.3);
 	showObj("Obj_1");
 	glPopMatrix();
-
+	CrossSkillpage();
 	glutSwapBuffers();
 }
 
@@ -1056,6 +1070,11 @@ void Mouse(int btn, int state, int x, int y)
 	if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 		LeftButton = true;
+		if (startgame)
+		{
+			mouseHandler.leftClickDown(x, 800-y);
+		}
+		//std::cout << x << y << endl;
 	}
 	if (btn == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
 	{
@@ -1150,13 +1169,78 @@ void START()
 	std::cout << "GAME STARTS!!!" << endl;
 }
 
+void CrossSkill1() {
+	std::cout << "Player1 skill" << endl;
+	vector<grid>::iterator i;
+	for (i = Grids.begin(); i != Grids.end(); ++i)
+	{
+		if (i->mx = parts[0].position[0]) {
+			i->mat = parts[0].mat;
+		}
+		if (i->mz = parts[0].position[3]) {
+			i->mat = parts[0].mat;
+		}
+	}
+}
+void CrossSkill2() {
+	std::cout << "Player2 skill" << endl;
+	vector<grid>::iterator i;
+	for (i = Grids.begin(); i != Grids.end(); ++i)
+	{
+		if (i->mx == parts[1].position[0]) {
+			i->mat = parts[1].mat;
+		}
+		if (i->mz == parts[1].position[3]) {
+			i->mat = parts[1].mat;
+		}
+	}
+}
+void CrossSkill3() {
+	std::cout << "Player3 skill" << endl;
+	vector<grid>::iterator i;
+	for (i = Grids.begin(); i != Grids.end(); ++i)
+	{
+		if (i->mx = parts[2].position[0]) {
+			i->mat = parts[2].mat;
+		}
+		if (i->mz = parts[2].position[3]) {
+			i->mat = parts[2].mat;
+		}
+	}
+}
+void CrossSkill4() {
+	std::cout << "Player4 skill" << endl;
+	vector<grid>::iterator i;
+	for (i = Grids.begin(); i != Grids.end(); ++i)
+	{
+		if (i->mx = parts[3].position[0]) {
+			i->mat = parts[3].mat;
+		}
+		
+		if (i->mz = parts[3].position[3]) {
+			i->mat = parts[3].mat;
+		}
+		
+	}
+}
 Handler Here = {
 	400,
 	460,
 	400,
 	380,
 	START};
-
+Handler Cross1 = {
+	670,720,800-12,800-38,CrossSkill1
+};
+Handler Cross2 = {
+	670,720,800-50,800-80,CrossSkill2
+};
+Handler Cross3 = {
+	670,720,800-90,800-120,CrossSkill3
+};
+Handler Cross4 = {
+	670,720,800-130,800-160,CrossSkill4
+};
 /* main function */
 int main(int argc, char **argv)
 {
@@ -1166,6 +1250,10 @@ int main(int argc, char **argv)
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
 	mouseHandler.addHandler(&Here);
+	mouseHandler.addHandler(&Cross1);
+	mouseHandler.addHandler(&Cross2);
+	mouseHandler.addHandler(&Cross3);
+	mouseHandler.addHandler(&Cross4);
 	glutCreateWindow("marble war");
 
 	GenFloor();
