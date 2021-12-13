@@ -60,6 +60,7 @@ bool LeftButton = false;   // track left mouse status
 bool RightButton = false;  // track right mouse status
 bool middleButton = false; //track middle mouse status
 bool startgame = false;
+bool freemode = false;
 vector<grid> Grids;
 int angle = 0;	//heart angle
 float heartx = 0.0;
@@ -627,8 +628,12 @@ void init(void)
 	CrossSkill_img = LoadPPM("ppm/player.ppm", &Width3, &Height3, &Max3);
 	ObjectLoader Obj_1;
 	Obj_1 = ObjectLoader();
-	Obj_1.loadObject("obj/heart.obj");
+	Obj_1.loadObject("obj/Saturn.obj");
 	list["Obj_1"] = Obj_1;
+	ObjectLoader Obj_2;
+	Obj_2 = ObjectLoader();
+	Obj_2.loadObject("obj/heart.obj");
+	list["Obj_2"] = Obj_2;
 }
 
 /* draw particles */
@@ -840,15 +845,48 @@ void display(void)
 	glutSolidCube(2);
 	glPopMatrix();
 	drawObjects();
-
-	glPushMatrix();
-	glTranslatef(heartx, 15, heartz);
+	if (freemode){
+		glPushMatrix();
+		glTranslatef(heartx, 15, heartz);
+		glRotatef(-90, 1, 0, 0);
+		glRotatef(angle, 0, 0, 1);
+		glScalef(0.008, 0.008, 0.008);
+		showObj("Obj_1");
+		glPopMatrix();
+	} else {
+		glPushMatrix();
+	glTranslatef(18, 8, 18);
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(angle, 0, 0, 1);
-	glScalef(0.2, 0.2, 0.2);
-	showObj("Obj_1");
+	glScalef(0.1, 0.1, 0.1);
+	showObj("Obj_2");
 	glPopMatrix();
 	
+	glPushMatrix();
+	glTranslatef(-18, 8, 18);
+	glRotatef(-90, 1, 0, 0);
+	glRotatef(angle, 0, 0, 1);
+	glScalef(0.1, 0.1, 0.1);
+	showObj("Obj_2");
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(18, 8, -18);
+	glRotatef(-90, 1, 0, 0);
+	glRotatef(angle, 0, 0, 1);
+	glScalef(0.1, 0.1, 0.1);
+	showObj("Obj_2");
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-18, 8, -18);
+	glRotatef(-90, 1, 0, 0);
+	glRotatef(angle, 0, 0, 1);
+	glScalef(0.1, 0.1, 0.1);
+	showObj("Obj_2");
+	glPopMatrix();
+	}
+
 	glutSwapBuffers();
 }
 
