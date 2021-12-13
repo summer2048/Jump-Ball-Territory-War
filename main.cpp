@@ -61,7 +61,9 @@ bool RightButton = false;  // track right mouse status
 bool middleButton = false; //track middle mouse status
 bool startgame = false;
 vector<grid> Grids;
-
+int angle = 0;	//heart angle
+float heartx = 0.0;
+float heartz = 0.0;
 /* LIGHTING */
 float light_pos[4] = {5, 5, 5, 0};
 float amb[4] = {1, 1, 1, 1};
@@ -239,6 +241,15 @@ void firework(float x, float z, int mat)
 	parts.push_back(newPart);
 }
 
+void Pastrybags(float x, float z){
+	Particle newPart(x,15, z, 0, -1, 0);
+	newPart.age = 120;
+	newPart.speed = 0.5;
+	newPart.size = 0.15;
+	newPart.mat = rand()%4 + 1;
+	parts.push_back(newPart);
+}
+
 /* firework explosion*/
 void firework1(float dx, float dy, float dz, int mat)
 {
@@ -374,7 +385,7 @@ void drawgridfloor()
 }
 
 void Intersectiontest()
-{
+{	if (startgame){
 	double projection[16];
 	double modelview[16];
 	int viewport[4];
@@ -396,7 +407,7 @@ void Intersectiontest()
 	rayY /= unit;
 	rayZ /= unit;
 
-	if (LeftButton == true)
+	if (LeftButton == true && RightButton == false)
 	{
 		double t = ((30) - Nobjx) / rayX;
 
@@ -412,6 +423,37 @@ void Intersectiontest()
 			firework(rand() % 10, rand() % 10, 0);
 		}
 	}
+	if (LeftButton == true && RightButton == true){
+		double t = ((15) - Nobjy) / rayY;
+
+		double IntersectX, IntersectY, IntersectZ; //calculated intersect points
+		IntersectX = Nobjx + t * rayX;
+		IntersectY = 15;
+		IntersectZ = Nobjz + t * rayZ;
+
+		if (IntersectX > heartx - 2 && IntersectX < heartx + 2 &&
+			IntersectY > 14 && IntersectY < 25 &&
+			IntersectZ > heartz - 2 && IntersectZ < heartz + 2)
+		{
+			heartx = IntersectX;
+			heartz = IntersectZ;
+			if (heartx > 20){
+				heartx = 20;
+			}
+			if (heartx < -20){
+				heartx = -20;
+			}
+			if (heartz > 20){
+				heartz = 20;
+			}
+			if (heartz < -20){
+				heartz = -20;
+			}
+			Pastrybags(heartx,heartz);
+			//firework(heartx, heartz, 0);
+		}
+	}
+}
 }
 
 void clear()
@@ -727,6 +769,7 @@ void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	welcomepage();
+	CrossSkillpage();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45, 1, 1, 100);
@@ -799,12 +842,13 @@ void display(void)
 	drawObjects();
 
 	glPushMatrix();
-	glTranslatef(0, 10, 0);
-	glRotatef(180, 0, 1, 0);
-	glScalef(0.3, 0.3, 0.3);
+	glTranslatef(heartx, 15, heartz);
+	glRotatef(-90, 1, 0, 0);
+	glRotatef(angle, 0, 0, 1);
+	glScalef(0.2, 0.2, 0.2);
 	showObj("Obj_1");
 	glPopMatrix();
-	CrossSkillpage();
+	
 	glutSwapBuffers();
 }
 
@@ -1028,6 +1072,13 @@ void rayPick()
 	picked_object = idx;
 }
 
+void spin(int val)
+{
+	angle +=1;
+	glutPostRedisplay();
+	glutTimerFunc(17, spin, 0);
+}
+
 /* FPS function - 60 FPS per second */
 void FPS(int val)
 {
@@ -1150,6 +1201,16 @@ void Mouse(int btn, int state, int x, int y)
 		}
 	}
 }
+
+void motion(int x,int y){
+	if (LeftButton == true && RightButton == true){
+		MouseX = x;
+		MouseY = 800 - y;
+		Intersectiontest();
+	}
+	//std::cout<<MouseX<<" "<<MouseY<<endl; 
+	glutPostRedisplay();
+}
 void wheel(int wheel, int dir, int x, int y) {
 	if (dir > 0) {
 		radius = max(10.0f, radius - 3);
@@ -1262,7 +1323,9 @@ int main(int argc, char **argv)
 	glutSpecialFunc(SpecialKey);
 	glutMouseFunc(Mouse);
 	glutTimerFunc(17, FPS, 0);
+	glutTimerFunc(17,spin,0);
 	glutMouseWheelFunc(wheel);
+	glutMotionFunc(motion);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_DST_COLOR);
