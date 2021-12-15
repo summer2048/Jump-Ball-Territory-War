@@ -687,7 +687,10 @@ void showtext()
 	string String3 = "Player 3 Points : " + score3;
 	std::string score4 = std::to_string(Player4.points);
 	string String4 = "Player 4 Points : " + score4;
-	int len = String1.length();
+	int len1 = String1.length();
+	int len2 = String1.length();
+	int len3 = String1.length();
+	int len4 = String1.length();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -697,7 +700,7 @@ void showtext()
 	glPushMatrix();
 	glLoadIdentity();
 	glRasterPos2f(0, 770);
-	for (int i = 0; i < len; ++i)
+	for (int i = 0; i < len1; ++i)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String1[i]);
 	}
@@ -705,7 +708,7 @@ void showtext()
 	glPushMatrix();
 	glLoadIdentity();
 	glRasterPos2f(0, 750);
-	for (int i = 0; i < len; ++i)
+	for (int i = 0; i < len2; ++i)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String2[i]);
 	}
@@ -713,7 +716,7 @@ void showtext()
 	glPushMatrix();
 	glLoadIdentity();
 	glRasterPos2f(0, 730);
-	for (int i = 0; i < len; ++i)
+	for (int i = 0; i < len3; ++i)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String3[i]);
 	}
@@ -721,7 +724,7 @@ void showtext()
 	glPushMatrix();
 	glLoadIdentity();
 	glRasterPos2f(0, 710);
-	for (int i = 0; i < len; ++i)
+	for (int i = 0; i < len4; ++i)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String4[i]);
 	}
@@ -1343,10 +1346,6 @@ void keyboard(unsigned char key, int x, int y)
 		{
 			parts.pop_back();
 		}
-		break;
-	case 'c':
-	case 'C':
-		freemode = !freemode;
 		break;
 	case 'Y':
 		if (endgame){
