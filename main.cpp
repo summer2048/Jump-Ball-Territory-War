@@ -36,15 +36,13 @@ GLubyte *Welcome_img;
 int Width2, Height2, Max2;
 GLubyte* CrossSkill_img;
 int Width3, Height3, Max3;
-GLubyte *End_img;
-int Width4, Height4, Max4;
 unsigned int Texture[3];
 ObjectLoader obj1;
 map<string, ObjectLoader> list;
 
 int gameSpeed = 1;
 
-// TOBE FIXED 2. two blue balls have similar color, have best to change one of it.
+
 float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1}, {0.2295f, 0.08825f, 0.0275f, 1.0f}, {0.5, 0.4, 0.3, 0.2}, {0.05f, 0.05f, 0.0f, 1.0f}};
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}, {0.5508f, 0.2118f, 0.066f, 1.0f}, {0.396f, 0.74151f, 0.69102f, 0.8f}, {0.5f, 0.5f, 0.4f, 1.0f}};
 float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0.580594f, 0.223257f, 0.0695701f, 1.0f}, {0.297254f, 0.30829f, 0.306678f, 0.8f}, {0.7f, 0.7f, 0.04f, 1.0f}};
@@ -55,7 +53,6 @@ float scalex = 90;
 float pi = 3.1415926536f;
 float camPos[] = { (float)(radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) , (float)(radius * cos(scaley * (pi / 180.0))) , (float)(radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) };
 
-bool blend = false;
 int MouseX = 0;			   //Mouse position X
 int MouseY = 0;			   //Mouse position Y
 bool LeftButton = false;   // track left mouse status
@@ -64,6 +61,10 @@ bool middleButton = false; //track middle mouse status
 bool startgame = false;
 bool freemode = false;
 bool endgame = false;
+bool heart1 = true;
+bool heart2 = true;
+bool heart3 = true;
+bool heart4 = true;
 vector<grid> Grids;
 int angle = 0;	//heart angle
 float heartx = 0.0;
@@ -101,9 +102,6 @@ struct Handler
 
 	bool isInBounds(unsigned int x, unsigned int y)
 	{
-		/**
-         * YOUR CODE HERE, replace `false` with your expression.
-         */
 		if (x <= mRight && x >= mLeft && y <= mTop && y >= mBottom)
 		{
 			return true;
@@ -460,69 +458,6 @@ void clear()
 	}
 }
 
-void keyboard(unsigned char key, int x, int y)
-{
-	/* key presses move the cube, if it isn't at the extents (hard-coded here) */
-	switch (key)
-	{
-	case 'q':
-	case 27:
-		exit(0);
-		break;
-	case 'a':
-		if (startgame)
-		{
-			firework(rand() % 10, rand() % 10, 0);
-		}
-		break;
-	case 'r':
-		clear();
-		break;
-	case 'o':
-		objects.push_back(object(0, 0, 0, rand()%3));
-		break;
-	case 'f':
-	case 'F':
-		if (startgame)
-		{
-			fountain((randf() - 0.5) * 15, 0, (randf() - 0.5) * 15);
-		}
-		break;
-	case 'R':
-		while (int i = parts.size() > 4)
-		{
-			parts.pop_back();
-		}
-		break;
-	case 'c':
-	case 'C':
-		freemode = !freemode;
-		break;
-	case 'b':
-		endgame = !endgame;
-		break;
-	case 'Y':
-		if (endgame){
-			endgame = false;
-			startgame = false;
-		}
-		break;
-	case 'n':
-		if (endgame){
-			exit(0);
-		}
-		break;
-	case '+':
-		gameSpeed += 1;
-		break;
-	case '-':
-		if (gameSpeed > 1)
-			gameSpeed -= 1;
-		break;
-	}
-	glutPostRedisplay();
-}
-
 void SpecialKey(int key, int x, int y)
 {
 	
@@ -643,7 +578,6 @@ void init()
 	img_1 = LoadPPM("ppm/sky1.ppm", &Width1, &Height1, &Max1);
 	Welcome_img = LoadPPM("ppm/welcome.ppm", &Width2, &Height2, &Max2);
 	CrossSkill_img = LoadPPM("ppm/player.ppm", &Width3, &Height3, &Max3);
-	End_img = LoadPPM("ppm/end.ppm", &Width4, &Height4, &Max4);
 	ObjectLoader Obj_1;
 	Obj_1 = ObjectLoader();
 	Obj_1.loadObject("obj/Saturn.obj");
@@ -680,6 +614,67 @@ void drawparts()
 		glPopMatrix();
 	}
 	glPopMatrix();
+}
+
+void showendtext()
+{	
+	if (!freemode){
+	string String1 = "Player 1 wins!!!";
+	string String2 = "Player 2 wins!!!";
+	string String3 = "Player 3 wins!!!";
+	string String4 = "Player 4 wins!!!";
+	string String5 = "Wanna play it again ? Press Y/n.";
+	int len = String1.length();
+	int len5 = String5.length();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, 800, 0, 800);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glRasterPos2f(200, 100);
+	if (heart1 && !heart2 && !heart3 && !heart4){
+		for (int i = 0; i < len; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String1[i]);
+		}
+		for (int i = 0; i < len5; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String5[i]);
+		}
+		endgame = true;
+	}
+	if (!heart1 && heart2 && !heart3 && !heart4){
+		for (int i = 0; i < len; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String2[i]);
+		}
+		for (int i = 0; i < len5; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String5[i]);
+		}
+		endgame = true;
+	}
+	if (!heart1 && !heart2 && heart3 && !heart4){
+		for (int i = 0; i < len; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String3[i]);
+		}
+		for (int i = 0; i < len5; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String5[i]);
+		}
+		endgame = true;
+	}
+	if (!heart1 && !heart2 && !heart3 && heart4){
+		for (int i = 0; i < len; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String4[i]);
+		}
+		for (int i = 0; i < len5; ++i){
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, String5[i]);
+		}
+		endgame = true;
+	}
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
 }
 
 void showtext()
@@ -748,9 +743,6 @@ void welcomepage()
 	{
 		glDrawPixels(Width2, Height2, GL_RGB, GL_UNSIGNED_BYTE, Welcome_img);
 	}
-	if (endgame){
-		glDrawPixels(Width4, Height4, GL_RGB, GL_UNSIGNED_BYTE, End_img);
-	}
 }
 void CrossSkillpage() {
 	glMatrixMode(GL_PROJECTION);
@@ -810,6 +802,7 @@ void display(void)
 	glLoadIdentity();
 	gluPerspective(45, 1, 1, 150);
 	showtext();
+	showendtext();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -875,37 +868,43 @@ void display(void)
 		showObj("Obj_1");
 		glPopMatrix();
 	} else {
-		glPushMatrix();
+		if (heart2){
+			glPushMatrix();
 	glTranslatef(18, 8, 18);
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(angle, 0, 0, 1);
 	glScalef(0.1, 0.1, 0.1);
 	showObj("Obj_2");
 	glPopMatrix();
-	
-	glPushMatrix();
-	glTranslatef(-18, 8, 18);
-	glRotatef(-90, 1, 0, 0);
-	glRotatef(angle, 0, 0, 1);
-	glScalef(0.1, 0.1, 0.1);
-	showObj("Obj_2");
-	glPopMatrix();
-
-	glPushMatrix();
+		}
+		if (heart4){
+			glPushMatrix();
 	glTranslatef(18, 8, -18);
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(angle, 0, 0, 1);
 	glScalef(0.1, 0.1, 0.1);
 	showObj("Obj_2");
 	glPopMatrix();
-
-	glPushMatrix();
+		}
+		if (heart3){
+			glPushMatrix();
 	glTranslatef(-18, 8, -18);
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(angle, 0, 0, 1);
 	glScalef(0.1, 0.1, 0.1);
 	showObj("Obj_2");
 	glPopMatrix();
+			
+		}
+	if (heart1){
+		glPushMatrix();
+	glTranslatef(-18, 8, 18);
+	glRotatef(-90, 1, 0, 0);
+	glRotatef(angle, 0, 0, 1);
+	glScalef(0.1, 0.1, 0.1);
+	showObj("Obj_2");
+	glPopMatrix();
+	}
 	}
 
 	glutSwapBuffers();
@@ -1136,7 +1135,36 @@ void rayPick()
 
 	picked_object = idx;
 }
-
+void hideheart(int i){
+	switch (i){
+		case 0:
+			heart1 = false;
+			break;
+		case 1:
+			heart2 = false;
+			break;
+		case 2:
+			heart3 = false;
+			break;
+		case 3:
+			heart4 = false;
+			break;
+	}
+}
+void resetgame(){
+	clear();
+	parts.clear();
+	initParts(1, -18.5, 18.5);
+	initParts(2, 18.5, 18.5);
+	initParts(3, -18.5, -18.5);
+	initParts(4, 18.5, -18.5);
+	objects.clear();
+	initObjects();
+	heart1 = true;
+	heart2 = true;
+	heart3 = true;
+	heart4 = true;
+}
 void spin(int val)
 {
 	angle +=1;
@@ -1174,13 +1202,14 @@ void FPS(int val)
 		}
 
 		// In case health = 0, destruct object and set parts to invisible
-		if (objects[i].counter == 0)
+		if (objects[i].counter == 0 && !freemode)
 		{
 			for (int j = 0; j < parts.size(); j++)
 			{
 				if (parts[j].mat == objects[i].material) {
 					parts[j].speed = 0;
 					parts[j].is_visible = false;
+					hideheart(j);
 				}
 			}
 			objects[i] = objects[objects.size()-1];
@@ -1281,7 +1310,66 @@ void Mouse(int btn, int state, int x, int y)
 		}
 	}
 }
-
+void keyboard(unsigned char key, int x, int y)
+{
+	/* key presses move the cube, if it isn't at the extents (hard-coded here) */
+	switch (key)
+	{
+	case 'q':
+	case 27:
+		exit(0);
+		break;
+	case 'a':
+		if (startgame)
+		{
+			firework(rand() % 10, rand() % 10, 0);
+		}
+		break;
+	case 'r':
+		clear();
+		break;
+	case 'o':
+		objects.push_back(object(0, 0, 0, rand()%3));
+		break;
+	case 'f':
+	case 'F':
+		if (startgame)
+		{
+			fountain((randf() - 0.5) * 15, 0, (randf() - 0.5) * 15);
+		}
+		break;
+	case 'R':
+		while (int i = parts.size() > 4)
+		{
+			parts.pop_back();
+		}
+		break;
+	case 'c':
+	case 'C':
+		freemode = !freemode;
+		break;
+	case 'Y':
+		if (endgame){
+			endgame = false;
+			startgame = false;
+			resetgame();
+		}
+		break;
+	case 'n':
+		if (endgame){
+			exit(0);
+		}
+		break;
+	case '+':
+		gameSpeed += 1;
+		break;
+	case '-':
+		if (gameSpeed > 1)
+			gameSpeed -= 1;
+		break;
+	}
+	glutPostRedisplay();
+}
 void motion(int x,int y){
 	if (LeftButton == true && RightButton == true){
 		MouseX = x;
