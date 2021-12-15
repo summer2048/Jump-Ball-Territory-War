@@ -1315,133 +1315,44 @@ void STARTmatch()
 	freemode = false;
 	std::cout << "GAME STARTS!!! Win the game!!" << endl;
 }
-void CrossSkill1() {
-	std::cout << "Player1 skill" << endl;
-	std::cout << radius<<scalex<<scaley << endl;
+void Skill(int player) {
 	vector<grid>::iterator i;
 	vector<Particle>::iterator j;
 	for (i = Grids.begin(); i != Grids.end(); ++i)
-	{	
+	{
 		if (freemode) {
-			if (i->mx == Player1.basex) {
-				i->mat = Player1.mat;
+			if (i->mx == Grids[grid::getNumber(parts[player].position[0], parts[player].position[2])].mx) {
+				i->mat = parts[player].mat;
 			}
-			if (i->mz == Player1.basez) {
-				i->mat = Player1.mat;
+			if (i->mz == Grids[grid::getNumber(parts[player].position[0], parts[player].position[2])].mz) {
+				i->mat = parts[player].mat;
 			}
 		}
 		if (!freemode) {
-			for (j = parts.begin(); j != parts.end(); ++j) {
-				if (j->is_permanent && j->mat == Player1.mat) {
-					/*if (i->mx <= j->position[0]) {
-						i->mat = Player1.mat;
-					}
-					if (i->mz == j->position[2]) {
-						i->mat = Player1.mat;
-					}*/
-					if (i->mx == j->position[0] && i->mz == j->position[2]) {
-						Grids[i->number + 1].mat = Player1.mat;
-						Grids[i->number - 1].mat = Player1.mat;
-						Grids[i->number + 2].mat = Player1.mat;
-						Grids[i->number + 2].mat = Player1.mat;
-					}
+			if (i->mx <= Grids[grid::getNumber(parts[player].position[0], parts[player].position[2])].mx + 2 && i->mx >= Grids[grid::getNumber(parts[player].position[0], parts[player].position[2])].mx - 2) {
+				if (i->mz <= Grids[grid::getNumber(parts[player].position[0], parts[player].position[2])].mz + 2 && i->mz >= Grids[grid::getNumber(parts[player].position[0], parts[player].position[2])].mz - 2) {
+					i->mat = parts[player].mat;
 				}
 			}
 		}
 	}
+}
+void CrossSkill1() {
+	std::cout << "Player1 skill" << endl;
+
+	Skill(0);
 }
 void CrossSkill2() {
 	std::cout << "Player2 skill" << endl;
-	vector<grid>::iterator i;
-	vector<Particle>::iterator j;
-	/*for (i = Grids.begin(); i != Grids.end(); ++i)
-	{
-		if (freemode) {
-			if (i->mx == Player2.basex) {
-				i->mat = Player2.mat;
-			}
-			if (i->mz == Player2.basez) {
-				i->mat = Player2.mat;
-			}
-		}
-		if (!freemode) {
-			for (j = parts.begin(); j != parts.end(); ++j) {
-				if (j->is_permanent && j->mat == Player2.mat) {
-					if (i->mx == j->position[0]) {
-						i->mat = Player2.mat;
-					}
-					if (i->mz == j->position[2]) {
-						i->mat = Player2.mat;
-					}
-				}
-			}
-		}
-	}*/
-	for (j = parts.begin(); j != parts.end(); ++j) {
-		if (j->is_permanent && j->mat == Player2.mat) {
-			Grids[GetNumber(j->position[0]+1, j->position[2])].mat = Player2.mat;
-			/*Grids[GetNumber(j->position[0], j->position[2])].mat = Player2.mat;
-			Grids[GetNumber(j->position[0], j->position[2])].mat = Player2.mat;
-			Grids[GetNumber(j->position[0], j->position[2])].mat = Player2.mat;*/
-		}
-	}
+	Skill(1);
 }
 void CrossSkill3() {
 	std::cout << "Player3 skill" << endl;
-	vector<grid>::iterator i;
-	vector<Particle>::iterator j;
-	for (i = Grids.begin(); i != Grids.end(); ++i)
-	{
-		if (freemode) {
-			if (i->mx == Player3.basex) {
-				i->mat = Player3.mat;
-			}
-			if (i->mz == Player3.basez) {
-				i->mat = Player3.mat;
-			}
-		}
-		if (!freemode) {
-			for (j = parts.begin(); j != parts.end(); ++j) {
-				if (j->is_permanent && j->mat == Player3.mat) {
-					if (i->mx == j->position[0]) {
-						i->mat = Player3.mat;
-					}
-					if (i->mz == j->position[2]) {
-						i->mat = Player3.mat;
-					}
-				}
-			}
-		}
-	}
+	Skill(2);
 }
 void CrossSkill4() {
 	std::cout << "Player4 skill" << endl;
-	vector<grid>::iterator i;
-	vector<Particle>::iterator j;
-	for (i = Grids.begin(); i != Grids.end(); ++i)
-	{
-		if (freemode) {
-			if (i->mx == Player4.basex) {
-				i->mat = Player4.mat;
-			}
-
-			if (i->mz == Player4.basez) {
-				i->mat = Player4.mat;
-			}
-		}
-		if (!freemode) {
-			for (j = parts.begin(); j != parts.end(); ++j) {
-				if (j->is_permanent && i->mat == Player4.mat) {
-					if (i->mx == j->position[0]) {
-						i->mat = Player4.mat;
-					}
-					if (i->mz == j->position[2]) {
-						i->mat = Player4.mat;
-					}
-				}
-			}
-		}
-	}
+	Skill(3);
 }
 Handler freemode1 = {
 	300,
