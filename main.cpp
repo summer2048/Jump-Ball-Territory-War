@@ -49,9 +49,9 @@ float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}, {0.5508f, 0.2118f, 0.066f, 1.0f}, {0.396f, 0.74151f, 0.69102f, 0.8f}, {0.5f, 0.5f, 0.4f, 1.0f}};
 float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0.580594f, 0.223257f, 0.0695701f, 1.0f}, {0.297254f, 0.30829f, 0.306678f, 0.8f}, {0.7f, 0.7f, 0.04f, 1.0f}};
 /*camera scale*/
-float radius = 50;
-float scaley = 60;
-float scalex = 60;
+float radius = 65;
+float scaley = 44;
+float scalex = 90;
 float pi = 3.1415926536f;
 float camPos[] = { (float)(radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) , (float)(radius * cos(scaley * (pi / 180.0))) , (float)(radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) };
 
@@ -1292,6 +1292,7 @@ void STARTmatch()
 }
 void CrossSkill1() {
 	std::cout << "Player1 skill" << endl;
+	std::cout << radius<<scalex<<scaley << endl;
 	vector<grid>::iterator i;
 	vector<Particle>::iterator j;
 	for (i = Grids.begin(); i != Grids.end(); ++i)
