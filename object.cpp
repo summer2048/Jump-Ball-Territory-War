@@ -3,7 +3,7 @@
 
 object::object(float pX, float pY, float pZ, int type)
 	: position {pX,pY,pZ}
-	, material(0)
+	, material(7)
 	, type(type)
 	, size(1)
 	, DownLeft {0,0,0}

@@ -42,6 +42,11 @@ map<string, ObjectLoader> list;
 
 int gameSpeed = 1;
 
+int drawing_material = 0;
+
+int pause = false;
+int gameSpeedCopy;
+
 
 float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2, 0.2, 0.6, 1}, {0.2295f, 0.08825f, 0.0275f, 1.0f}, {0.5, 0.4, 0.3, 0.2}, {0.05f, 0.05f, 0.0f, 1.0f}};
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}, {0.5508f, 0.2118f, 0.066f, 1.0f}, {0.396f, 0.74151f, 0.69102f, 0.8f}, {0.5f, 0.5f, 0.4f, 1.0f}};
@@ -245,7 +250,7 @@ void Pastrybags(float x, float z){
 	newPart.age = 120;
 	newPart.speed = 0.5;
 	newPart.size = 0.15;
-	newPart.mat = rand()%4 + 1;
+	newPart.mat = drawing_material;
 	parts.push_back(newPart);
 }
 
@@ -764,6 +769,24 @@ float bar2[3] = {-20, 10, 0};
 float bar3[3] = {-20, 8, 0};
 float bar4[3] = {-20, 6, 0};
 
+void drawShapes(object &obj){
+		switch (obj.type)
+		{
+		case Cylinder:
+			glutSolidCylinder(obj.size, obj.size, 16, 16);
+			break;
+		case Cube:
+			glutSolidCube(2*obj.size);
+			break;
+		case Cone:
+			glutSolidCone(obj.size, obj.size, 16, 16);
+			break;
+		default:
+			cout << "Fail to draw" << endl;
+			break;
+		}
+}
+
 void drawObjects()
 {
 	for (int i = 0; i < objects.size(); i++)
@@ -776,21 +799,18 @@ void drawObjects()
 		glPushMatrix();
 		glTranslatef(objects[i].position[0], objects[i].position[1], objects[i].position[2]);
 		glRotatef(270, 1, 0, 0);
-		switch (objects[i].type)
-		{
-		case Cylinder:
-			glutSolidCylinder(objects[i].size, objects[i].size, 16, 16);
-			break;
-		case Cube:
-			glutSolidCube(2*objects[i].size);
-			break;
-		case Cone:
-			glutSolidCone(objects[i].size, objects[i].size, 16, 16);
-			break;
-		default:
-			cout << "Fail to draw" << endl;
-			break;
-		}
+
+		drawShapes(objects[i]);
+
+		if (picked_object == i){
+        	glCullFace(GL_BACK);
+        	glPushMatrix();
+        	glScalef(1.05,1.05,1.05);
+        	drawShapes(objects[i]);
+        	glPopMatrix();
+        	glCullFace(GL_FRONT);
+    	}
+	
 		glPopMatrix();
 	}
 }
@@ -947,7 +967,24 @@ void deleteParticle(int i)
 	parts.pop_back();
 }
 
-void getHit(object &obj, Particle &part)
+void hideheart(int i){
+	switch (i){
+		case 0:
+			heart1 = false;
+			break;
+		case 1:
+			heart2 = false;
+			break;
+		case 2:
+			heart3 = false;
+			break;
+		case 3:
+			heart4 = false;
+			break;
+	}
+}
+
+void getHit(object &obj, Particle &part, int playerNum)
 {
 	switch (obj.type)
 	{
@@ -960,6 +997,18 @@ void getHit(object &obj, Particle &part)
 	case Cone:
 		if (obj.material != part.mat){
 			obj.counter--;
+			cout << "Player " << playerNum+1 << " 's Base is Uner Attack! It has " << obj.counter << "Health Left" << endl;
+			if (obj.counter == 0){
+				for (int i = 0; i < 4; i++){
+					if (parts[i].mat == obj.material){
+						hideheart(i);
+						parts[i].mat = part.mat;
+					}
+				}
+				objects[playerNum] = objects[objects.size()-1];
+				objects.pop_back();
+				cout << "Player " << playerNum+1 << " is Defeated!" << endl;
+			}
 		}
 		break;
 	default:
@@ -1018,7 +1067,7 @@ void moveAll()
 						// Collision is detected
 						objects[j].colddown = 60;
 						objects[i].getHit(parts[i].mat);
-						getHit(objects[j], parts[i]);
+						getHit(objects[j], parts[i], j);
 						parts[i].direction[2] = -parts[i].direction[2];
 						parts[i].direction[0] = -parts[i].direction[0];
 					}
@@ -1138,36 +1187,7 @@ void rayPick()
 
 	picked_object = idx;
 }
-void hideheart(int i){
-	switch (i){
-		case 0:
-			heart1 = false;
-			break;
-		case 1:
-			heart2 = false;
-			break;
-		case 2:
-			heart3 = false;
-			break;
-		case 3:
-			heart4 = false;
-			break;
-	}
-}
-void resetgame(){
-	clear();
-	parts.clear();
-	initParts(1, -18.5, 18.5);
-	initParts(2, 18.5, 18.5);
-	initParts(3, -18.5, -18.5);
-	initParts(4, 18.5, -18.5);
-	objects.clear();
-	initObjects();
-	heart1 = true;
-	heart2 = true;
-	heart3 = true;
-	heart4 = true;
-}
+
 void spin(int val)
 {
 	angle +=1;
@@ -1202,21 +1222,6 @@ void FPS(int val)
 		if (objects[i].colddown > 0)
 		{
 			objects[i].colddown--;
-		}
-
-		// In case health = 0, destruct object and set parts to invisible
-		if (objects[i].counter == 0 && !freemode)
-		{
-			for (int j = 0; j < parts.size(); j++)
-			{
-				if (parts[j].mat == objects[i].material) {
-					parts[j].speed = 0;
-					parts[j].is_visible = false;
-					hideheart(j);
-				}
-			}
-			objects[i] = objects[objects.size()-1];
-			objects.pop_back();
 		}
 	}
 	glutTimerFunc(17, FPS, 0);
@@ -1313,6 +1318,22 @@ void Mouse(int btn, int state, int x, int y)
 		}
 	}
 }
+
+void resetgame(){
+	clear();
+	parts.clear();
+	initParts(1, -18.5, 18.5);
+	initParts(2, 18.5, 18.5);
+	initParts(3, -18.5, -18.5);
+	initParts(4, 18.5, -18.5);
+	objects.clear();
+	initObjects();
+	heart1 = true;
+	heart2 = true;
+	heart3 = true;
+	heart4 = true;
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 	/* key presses move the cube, if it isn't at the extents (hard-coded here) */
@@ -1331,28 +1352,32 @@ void keyboard(unsigned char key, int x, int y)
 	case 'r':
 		clear();
 		break;
-	case 'o':
-		objects.push_back(object(0, 0, 0, rand()%3));
-		break;
-	case 'f':
-	case 'F':
-		if (startgame)
-		{
-			fountain((randf() - 0.5) * 15, 0, (randf() - 0.5) * 15);
-		}
-		break;
 	case 'R':
 		while (int i = parts.size() > 4)
 		{
 			parts.pop_back();
 		}
 		break;
-	case 'Y':
-		if (endgame){
-			endgame = false;
-			startgame = false;
-			resetgame();
+	case 'o':
+		objects.push_back(object(0, 0, 0, rand()%2));
+		break;
+	case 'd':
+		if (picked_object != -1 && objects[picked_object].type != Cone){
+			objects[picked_object] = objects[objects.size()-1];
+			objects.pop_back();
 		}
+		break;
+	case 'p':
+		if (pause) {
+			gameSpeed = gameSpeedCopy;
+		} else {
+			gameSpeedCopy = gameSpeed;
+			gameSpeed = 0;
+		}
+		pause = !pause;
+		break;
+	case 'Y':
+		resetgame();
 		break;
 	case 'n':
 		if (endgame){
@@ -1365,6 +1390,15 @@ void keyboard(unsigned char key, int x, int y)
 	case '-':
 		if (gameSpeed > 1)
 			gameSpeed -= 1;
+		break;
+	case 49:
+	case 50:
+	case 51:
+	case 52:
+	case 53:
+		drawing_material = key - 49;
+		break;
+	default:
 		break;
 	}
 	glutPostRedisplay();
@@ -1394,13 +1428,17 @@ void STARTfree()
 {
 	startgame = true;
 	freemode = true;
-	std::cout << "GAME STARTS!!! Feel free to enjoy!!" << endl;
+	cout << "GAME STARTS!" << endl;
+	cout << "Marbles will keep moving and never be defeated in this model." << endl;
+	cout << "You can press 'p' to pause the game and/or hold Left & Right Mouse Button to pick Saturn to draw on the ground." << endl;
 }
 void STARTmatch()
 {
 	startgame = true;
 	freemode = false;
-	std::cout << "GAME STARTS!!! Win the game!!" << endl;
+	std::cout << "GAME STARTS!" << endl;
+	cout << "Marbles will be defeated if it's base (Cone) is hit 3 times by other marbles." << endl;
+	cout << "Press -/+ to change the game speed." << endl;
 }
 void Skill(int player) {
 	vector<grid>::iterator i;
