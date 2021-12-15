@@ -624,11 +624,11 @@ void drawparts()
 void showendtext()
 {	
 	if (!freemode){
-	string String1 = "Player 1 wins!!!";
-	string String2 = "Player 2 wins!!!";
-	string String3 = "Player 3 wins!!!";
-	string String4 = "Player 4 wins!!!";
-	string String5 = "Wanna play it again ? Press Y/n.";
+	string String1 = "Player 1 is the winner!";
+	string String2 = "Player 2 is the winner!";
+	string String3 = "Player 3 is the winner!";
+	string String4 = "Player 4 is the winner!";
+	string String5 = "Press Y/n to play again / quit.";
 	int len = String1.length();
 	int len5 = String5.length();
 	glMatrixMode(GL_PROJECTION);
@@ -675,6 +675,7 @@ void showendtext()
 		}
 		endgame = true;
 	}
+	if (endgame) pause = !pause;
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -997,7 +998,7 @@ void getHit(object &obj, Particle &part, int playerNum)
 	case Cone:
 		if (obj.material != part.mat){
 			obj.counter--;
-			cout << "Player " << playerNum+1 << " 's Base is Uner Attack! It has " << obj.counter << "Health Left" << endl;
+			cout << "Player " << playerNum+1 << " 's Base is Uner Attack! It Has " << obj.counter << " Health Left." << endl;
 			if (obj.counter == 0){
 				for (int i = 0; i < 4; i++){
 					if (parts[i].mat == obj.material){
@@ -1343,21 +1344,13 @@ void keyboard(unsigned char key, int x, int y)
 	case 27:
 		exit(0);
 		break;
-	case 'a':
-		if (startgame)
-		{
-			firework(rand() % 10, rand() % 10, 0);
-		}
-		break;
 	case 'r':
 		clear();
 		break;
 	case 'R':
-		while (int i = parts.size() > 4)
-		{
-			parts.pop_back();
-		}
-		break;
+	case 'Y':
+		resetgame();
+		break;	
 	case 'o':
 		objects.push_back(object(0, 0, 0, rand()%2));
 		break;
@@ -1376,20 +1369,19 @@ void keyboard(unsigned char key, int x, int y)
 		}
 		pause = !pause;
 		break;
-	case 'Y':
-		resetgame();
-		break;
+	
 	case 'n':
 		if (endgame){
 			exit(0);
 		}
 		break;
 	case '+':
-		gameSpeed += 1;
+		if (gameSpeed < pow(2,8))
+			gameSpeed *= 2;
 		break;
 	case '-':
 		if (gameSpeed > 1)
-			gameSpeed -= 1;
+			gameSpeed /= 2;
 		break;
 	case 49:
 	case 50:
@@ -1431,6 +1423,7 @@ void STARTfree()
 	cout << "GAME STARTS!" << endl;
 	cout << "Marbles will keep moving and never be defeated in this model." << endl;
 	cout << "You can press 'p' to pause the game and/or hold Left & Right Mouse Button to pick Saturn to draw on the ground." << endl;
+	cout << "Press 1-5 will change current drawing color." << endl;
 }
 void STARTmatch()
 {
