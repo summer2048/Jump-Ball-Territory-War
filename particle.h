@@ -8,6 +8,7 @@ using namespace std;
 class Particle
 {
 public:
+	bool is_visible;
 	bool is_permanent;
 	bool is_firework;
 	float position[3];

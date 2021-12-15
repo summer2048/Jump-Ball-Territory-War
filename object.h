@@ -3,6 +3,7 @@
 
 #define Cylinder 0
 #define Cube 1
+#define Cone 2
 
 class object
 {

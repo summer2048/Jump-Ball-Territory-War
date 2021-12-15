@@ -7,4 +7,5 @@ Particle::Particle(float pX, float pY, float pZ, float dX, float dY, float dZ)
     , is_permanent(false)
     , is_firework(false)
     , mat(rand()%4+1)
+    , is_visible(true)
 {}

@@ -79,8 +79,6 @@ float amb2[4] = {1, 0.5, 0.5, 1};
 float diff2[4] = {1, 0.5, 0.5, 1};
 float spec2[4] = {1, 0.5, 0.5, 1};
 
-/* -1 when partcam is off, non negative otherwise */
-int partcam = -1;
 
 vector<Particle> parts;
 vector<object> objects;
@@ -143,7 +141,6 @@ struct InteractionHandler
 
 	void leftClickDown(int x, int y)
 	{
-		//std::cout << "Left click at " << x << ", " << y << std::endl;
 		for (Handler *handler : mHandlers)
 		{
 			handler->handleClickAt(x, y);
@@ -328,9 +325,7 @@ void cube(float v[8][3])
 	drawPolygon(4, 0, 3, 7, v);
 }
 
-/* drawBox - takes centre point, width, height and depth of a box,
- *  calculates its corner vertices, and draws it with the cube function
- */
+/* drawBox */
 void drawBox(float *c, float w, float h, float d)
 {
 	float vertices[8][3] = {{c[0] - w / 2, c[1] - h / 2, c[2] + d / 2},
@@ -368,9 +363,7 @@ void GenFloor()
 			mx += 1;
 			mz = 19.5;
 		}
-		//std::cout<<mx<<" "<<mz<<endl;
 	}
-	//std::cout<<Grids.size()<<" floors generated!!!"<<endl;
 }
 
 //Used to draw the grid floor
@@ -385,7 +378,6 @@ void drawgridfloor()
 		float origin[3] = {Grids[i].mx, 0, Grids[i].mz};
 		drawBox(origin, 1, Grids[i].Height, 1);
 	}
-	//glutPostRedisplay();
 }
 
 void Intersectiontest()
@@ -487,10 +479,7 @@ void keyboard(unsigned char key, int x, int y)
 		clear();
 		break;
 	case 'o':
-		objects.push_back(object(0, 0, 0, rand()%2));
-		break;
-	case 'p':
-		partcam = -1;
+		objects.push_back(object(0, 0, 0, rand()%3));
 		break;
 	case 'f':
 	case 'F':
@@ -522,14 +511,6 @@ void keyboard(unsigned char key, int x, int y)
 		if (endgame){
 			exit(0);
 		}
-		break;
-	case 49:
-	case 50:
-	case 51:
-	case 52:
-	case 53:
-	case 54:
-		partcam = key - 49;
 		break;
 	case '+':
 		gameSpeed += 1;
@@ -613,9 +594,36 @@ void showObj(string obj)
 	glPopMatrix();
 }
 
-//GLubyte wb[2] = { 0x00, 0xff };
-//GLubyte checker[512];
-void init(void)
+void initObjects(){
+	object obj1(-17, 0, -17, Cone);
+	obj1.material = 3;
+	objects.push_back(obj1);
+	object obj2(17, 0, 17, Cone);
+	obj2.material = 2;
+	objects.push_back(obj2);
+	object obj3(17, 0, -17, Cone);
+	obj3.material = 4;
+	objects.push_back(obj3);
+	object obj4(-17, 0, 17, Cone);
+	obj4.material = 1;
+	objects.push_back(obj4);
+
+	object obj5(-4, 0, -4, Cone);
+	obj5.type = Cube;
+	objects.push_back(obj5);
+	object obj6(4, 0, 4, Cone);
+	obj6.type = Cube;
+	objects.push_back(obj6);
+	object obj7(4, 0, -4, Cone);
+	obj7.type = Cylinder;
+	objects.push_back(obj7);
+	object obj8(-4, 0, 4, Cone);
+	obj8.type = Cylinder;
+	objects.push_back(obj8);
+	
+}
+
+void init()
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
@@ -644,6 +652,8 @@ void init(void)
 	Obj_2 = ObjectLoader();
 	Obj_2.loadObject("obj/heart.obj");
 	list["Obj_2"] = Obj_2;
+	
+	initObjects();
 }
 
 /* draw particles */
@@ -653,7 +663,7 @@ void drawparts()
 	glTranslatef(0, 1, 0);
 	for (int i = 0; i < parts.size(); ++i)
 	{
-		if (parts[i].age < 0)
+		if (parts[i].age < 0 || !parts[i].is_visible)
 			continue;
 		int mat = parts[i].mat;
 		glPushMatrix();
@@ -763,6 +773,11 @@ void drawObjects()
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[objects[i].material]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffMat[objects[i].material]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specMat[objects[i].material]);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 27);
+
 		glPushMatrix();
 		glTranslatef(objects[i].position[0], objects[i].position[1], objects[i].position[2]);
 		glRotatef(270, 1, 0, 0);
@@ -772,7 +787,10 @@ void drawObjects()
 			glutSolidCylinder(objects[i].size, objects[i].size, 16, 16);
 			break;
 		case Cube:
-			glutSolidCube(objects[i].size);
+			glutSolidCube(2*objects[i].size);
+			break;
+		case Cone:
+			glutSolidCone(objects[i].size, objects[i].size, 16, 16);
 			break;
 		default:
 			cout << "Fail to draw" << endl;
@@ -790,20 +808,12 @@ void display(void)
 	CrossSkillpage();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45, 1, 1, 100);
+	gluPerspective(45, 1, 1, 150);
 	showtext();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	// Particle camera is on
-	if (partcam != -1)
-	{
-		gluLookAt(parts[partcam].position[0] - parts[partcam].direction[0], 25, parts[partcam].position[2] - parts[partcam].direction[2],
-				  parts[partcam].position[0], 3, parts[partcam].position[2], upPos[0], upPos[1], upPos[2]);
-	}
-	else
-	{
-		gluLookAt(camPos[0], camPos[1], camPos[2], 0, 0, 0, upPos[0], upPos[1], upPos[2]);
-	}
+
+	gluLookAt(camPos[0], camPos[1], camPos[2], 0, 0, 0, upPos[0], upPos[1], upPos[2]);
 	glColor4f(1, 1, 1, 1);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
@@ -816,8 +826,6 @@ void display(void)
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, diff);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
 
-	//drawBox(origin, 1, 0.5, 1);
-	//drawBox(origin1,1,0.5,1);
 	drawgridfloor();
 	drawparts();
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambMat[1]);
@@ -855,7 +863,7 @@ void display(void)
 
 	glPushMatrix();
 	glTranslatef(30, 10, -20);
-	glutSolidCube(2);
+	// glutSolidCube(2);
 	glPopMatrix();
 	drawObjects();
 	if (freemode){
@@ -937,7 +945,7 @@ void deleteParticle(int i)
 	parts.pop_back();
 }
 
-void getHit(object obj, Particle part)
+void getHit(object &obj, Particle &part)
 {
 	switch (obj.type)
 	{
@@ -947,8 +955,14 @@ void getHit(object obj, Particle part)
 	case Cube:
 		fountain(part.position[0], 0, part.position[2], part.mat);
 		break;
+	case Cone:
+		if (obj.material != part.mat){
+			obj.counter--;
+		}
+		break;
 	default:
 		cout << "Fail to call hit func." << endl;
+		break;
 	}
 }
 
@@ -1158,6 +1172,20 @@ void FPS(int val)
 		{
 			objects[i].colddown--;
 		}
+
+		// In case health = 0, destruct object and set parts to invisible
+		if (objects[i].counter == 0)
+		{
+			for (int j = 0; j < parts.size(); j++)
+			{
+				if (parts[j].mat == objects[i].material) {
+					parts[j].speed = 0;
+					parts[j].is_visible = false;
+				}
+			}
+			objects[i] = objects[objects.size()-1];
+			objects.pop_back();
+		}
 	}
 	glutTimerFunc(17, FPS, 0);
 }
@@ -1177,7 +1205,6 @@ void Mouse(int btn, int state, int x, int y)
 		{
 			mouseHandler.leftClickDown(x, 800-y);
 		}
-		//std::cout << x << y << endl;
 	}
 	
 	if (btn == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
@@ -1195,8 +1222,7 @@ void Mouse(int btn, int state, int x, int y)
 	{
 		if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			mouseHandler.leftClickDown(x, 800 - y);\
-			//std::cout<<MouseX<<" "<<MouseY<<endl; 
+			mouseHandler.leftClickDown(x, 800 - y);
 		}
 	}
 	else
@@ -1262,7 +1288,6 @@ void motion(int x,int y){
 		MouseY = 800 - y;
 		Intersectiontest();
 	}
-	//std::cout<<MouseX<<" "<<MouseY<<endl; 
 	glutPostRedisplay();
 }
 void wheel(int wheel, int dir, int x, int y) {
