@@ -693,9 +693,9 @@ void showtext()
 	std::string score4 = std::to_string(Player4.points);
 	string String4 = "Player 4 Points : " + score4;
 	int len1 = String1.length();
-	int len2 = String1.length();
-	int len3 = String1.length();
-	int len4 = String1.length();
+	int len2 = String2.length();
+	int len3 = String3.length();
+	int len4 = String4.length();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -1377,7 +1377,11 @@ void keyboard(unsigned char key, int x, int y)
 		pause = !pause;
 		break;
 	case 'Y':
-		resetgame();
+		if (endgame){
+			endgame = false;
+			startgame = false;
+			resetgame();
+		}
 		break;
 	case 'n':
 		if (endgame){
