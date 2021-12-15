@@ -49,9 +49,9 @@ float ambMat[7][4] = {{0, 0, 0, 1}, {0.2, 0.6, 0.2, 1}, {0.6, 0.2, 0.2, 1}, {0.2
 float diffMat[7][4] = {{0.5, 0, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 0, 1, 0}, {0.5508f, 0.2118f, 0.066f, 1.0f}, {0.396f, 0.74151f, 0.69102f, 0.8f}, {0.5f, 0.5f, 0.4f, 1.0f}};
 float specMat[7][4] = {{0, 0.5, 0, 1}, {0, 0.5, 0.5, 1}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0.580594f, 0.223257f, 0.0695701f, 1.0f}, {0.297254f, 0.30829f, 0.306678f, 0.8f}, {0.7f, 0.7f, 0.04f, 1.0f}};
 /*camera scale*/
-float radius = 50;
-float scaley = 60;
-float scalex = 60;
+float radius = 65;
+float scaley = 44;
+float scalex = 90;
 float pi = 3.1415926536f;
 float camPos[] = { (float)(radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) , (float)(radius * cos(scaley * (pi / 180.0))) , (float)(radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) };
 
@@ -166,7 +166,7 @@ struct InteractionHandler
 };
 
 InteractionHandler mouseHandler;
-
+InteractionHandler startHandler;
 GLubyte *LoadPPM(char *file, int *width, int *height, int *max)
 {
 	GLubyte *img;
@@ -633,7 +633,7 @@ void init()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45, 1, 1, 100);
-	// Initial 6 permanent particles.
+	// Initial 4 permanent particles.
 	initParts(1, -18.5, 18.5);
 	initParts(2, 18.5, 18.5);
 	initParts(3, -18.5, -18.5);
@@ -1222,7 +1222,7 @@ void Mouse(int btn, int state, int x, int y)
 	{
 		if (btn == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			mouseHandler.leftClickDown(x, 800 - y);
+			startHandler.leftClickDown(x, 800 - y); \
 		}
 	}
 	else
@@ -1317,56 +1317,130 @@ void STARTmatch()
 }
 void CrossSkill1() {
 	std::cout << "Player1 skill" << endl;
+	std::cout << radius<<scalex<<scaley << endl;
 	vector<grid>::iterator i;
+	vector<Particle>::iterator j;
 	for (i = Grids.begin(); i != Grids.end(); ++i)
-	{
-		if (i->mx = parts[0].position[0]) {
-			i->mat = parts[0].mat;
+	{	
+		if (freemode) {
+			if (i->mx == Player1.basex) {
+				i->mat = Player1.mat;
+			}
+			if (i->mz == Player1.basez) {
+				i->mat = Player1.mat;
+			}
 		}
-		if (i->mz = parts[0].position[3]) {
-			i->mat = parts[0].mat;
+		if (!freemode) {
+			for (j = parts.begin(); j != parts.end(); ++j) {
+				if (j->is_permanent && j->mat == Player1.mat) {
+					/*if (i->mx <= j->position[0]) {
+						i->mat = Player1.mat;
+					}
+					if (i->mz == j->position[2]) {
+						i->mat = Player1.mat;
+					}*/
+					if (i->mx == j->position[0] && i->mz == j->position[2]) {
+						Grids[i->number + 1].mat = Player1.mat;
+						Grids[i->number - 1].mat = Player1.mat;
+						Grids[i->number + 2].mat = Player1.mat;
+						Grids[i->number + 2].mat = Player1.mat;
+					}
+				}
+			}
 		}
 	}
 }
 void CrossSkill2() {
 	std::cout << "Player2 skill" << endl;
 	vector<grid>::iterator i;
-	for (i = Grids.begin(); i != Grids.end(); ++i)
+	vector<Particle>::iterator j;
+	/*for (i = Grids.begin(); i != Grids.end(); ++i)
 	{
-		if (i->mx == parts[1].position[0]) {
-			i->mat = parts[1].mat;
+		if (freemode) {
+			if (i->mx == Player2.basex) {
+				i->mat = Player2.mat;
+			}
+			if (i->mz == Player2.basez) {
+				i->mat = Player2.mat;
+			}
 		}
-		if (i->mz == parts[1].position[3]) {
-			i->mat = parts[1].mat;
+		if (!freemode) {
+			for (j = parts.begin(); j != parts.end(); ++j) {
+				if (j->is_permanent && j->mat == Player2.mat) {
+					if (i->mx == j->position[0]) {
+						i->mat = Player2.mat;
+					}
+					if (i->mz == j->position[2]) {
+						i->mat = Player2.mat;
+					}
+				}
+			}
+		}
+	}*/
+	for (j = parts.begin(); j != parts.end(); ++j) {
+		if (j->is_permanent && j->mat == Player2.mat) {
+			Grids[GetNumber(j->position[0]+1, j->position[2])].mat = Player2.mat;
+			/*Grids[GetNumber(j->position[0], j->position[2])].mat = Player2.mat;
+			Grids[GetNumber(j->position[0], j->position[2])].mat = Player2.mat;
+			Grids[GetNumber(j->position[0], j->position[2])].mat = Player2.mat;*/
 		}
 	}
 }
 void CrossSkill3() {
 	std::cout << "Player3 skill" << endl;
 	vector<grid>::iterator i;
+	vector<Particle>::iterator j;
 	for (i = Grids.begin(); i != Grids.end(); ++i)
 	{
-		if (i->mx = parts[2].position[0]) {
-			i->mat = parts[2].mat;
+		if (freemode) {
+			if (i->mx == Player3.basex) {
+				i->mat = Player3.mat;
+			}
+			if (i->mz == Player3.basez) {
+				i->mat = Player3.mat;
+			}
 		}
-		if (i->mz = parts[2].position[3]) {
-			i->mat = parts[2].mat;
+		if (!freemode) {
+			for (j = parts.begin(); j != parts.end(); ++j) {
+				if (j->is_permanent && j->mat == Player3.mat) {
+					if (i->mx == j->position[0]) {
+						i->mat = Player3.mat;
+					}
+					if (i->mz == j->position[2]) {
+						i->mat = Player3.mat;
+					}
+				}
+			}
 		}
 	}
 }
 void CrossSkill4() {
 	std::cout << "Player4 skill" << endl;
 	vector<grid>::iterator i;
+	vector<Particle>::iterator j;
 	for (i = Grids.begin(); i != Grids.end(); ++i)
 	{
-		if (i->mx = parts[3].position[0]) {
-			i->mat = parts[3].mat;
+		if (freemode) {
+			if (i->mx == Player4.basex) {
+				i->mat = Player4.mat;
+			}
+
+			if (i->mz == Player4.basez) {
+				i->mat = Player4.mat;
+			}
 		}
-		
-		if (i->mz = parts[3].position[3]) {
-			i->mat = parts[3].mat;
+		if (!freemode) {
+			for (j = parts.begin(); j != parts.end(); ++j) {
+				if (j->is_permanent && i->mat == Player4.mat) {
+					if (i->mx == j->position[0]) {
+						i->mat = Player4.mat;
+					}
+					if (i->mz == j->position[2]) {
+						i->mat = Player4.mat;
+					}
+				}
+			}
 		}
-		
 	}
 }
 Handler freemode1 = {
@@ -1402,8 +1476,8 @@ int main(int argc, char **argv)
 
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
-	mouseHandler.addHandler(&freemode1);
-	mouseHandler.addHandler(&matchmode);
+	startHandler.addHandler(&freemode1);
+	startHandler.addHandler(&matchmode);
 	mouseHandler.addHandler(&Cross1);
 	mouseHandler.addHandler(&Cross2);
 	mouseHandler.addHandler(&Cross3);
