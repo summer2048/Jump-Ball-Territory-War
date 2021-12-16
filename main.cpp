@@ -58,11 +58,11 @@ float scalex = 90;
 float pi = 3.1415926536f;
 float camPos[] = { (float)(radius * cos(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) , (float)(radius * cos(scaley * (pi / 180.0))) , (float)(radius * sin(scalex * (pi / 180.0)) * sin(scaley * (pi / 180.0))) };
 
-int MouseX = 0;			   //Mouse position X
-int MouseY = 0;			   //Mouse position Y
-bool LeftButton = false;   // track left mouse status
-bool RightButton = false;  // track right mouse status
-bool middleButton = false; //track middle mouse status
+int MouseX = 0;
+int MouseY = 0;
+bool LeftButton = false;
+bool RightButton = false;
+bool middleButton = false;
 bool startgame = false;
 bool freemode = false;
 bool endgame = false;
@@ -563,8 +563,29 @@ void initObjects(){
 	
 }
 
+void help(){
+	cout << "--------------------------------HELP--------------------------------------" << endl;
+	cout << "Preess 'q' to quit." << endl;
+	cout << "Preess 'r' to clear floor." << endl;
+	cout << "Press 'R' to restart game (switch game model)" << endl;
+	cout << "Preess 'p' to pause marble movement" << endl;
+	cout << "Press Up/Down/Left/Right to rotate the scene" << endl;
+	cout << "Use mouse wheel up/down to move closer/further to the scene" << endl;
+	cout << "Left click to pick objects (Cube, Cone, Cylinder), click others to unpick" << endl;
+	cout << "Left click & drag to move objects around the ground" << endl;
+	cout << "Press 'o' to add a random object to origin" << endl;
+	cout << "Press 'd' to delete picked object (Cone is the base so cannot be deleted)" << endl;
+	cout << "Press +/- to increase/decrease game speed" << endl;
+	cout << "Press 'Y' to restart a game (when previous game ends)" << endl;
+	cout << "Press n to quit (when previous game ends)" << endl;
+	cout << "Hold Left & Right mouse button to drag Saturn in free mode" << endl;
+	cout << "Press 1-5 to change current drawing color" << endl;
+	cout << "--------------------------------HELP_END-----------------------------------" << endl;
+}
+
 void init()
 {
+	help();
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
@@ -996,6 +1017,7 @@ void getHit(object &obj, Particle &part, int playerNum)
 		fountain(part.position[0], 0, part.position[2], part.mat);
 		break;
 	case Cone:
+		if (freemode) return;
 		if (obj.material != part.mat){
 			obj.counter--;
 			cout << "Player " << playerNum+1 << " 's Base is Uner Attack! It Has " << obj.counter << " Health Left." << endl;
@@ -1348,8 +1370,10 @@ void keyboard(unsigned char key, int x, int y)
 		clear();
 		break;
 	case 'R':
+		endgame = false;
+		startgame = false;
 		resetgame();
-		break;	
+		break;
 	case 'o':
 		objects.push_back(object(0, 0, 0, rand()%2));
 		break;
@@ -1425,18 +1449,19 @@ void STARTfree()
 {
 	startgame = true;
 	freemode = true;
-	cout << "GAME STARTS!" << endl;
+	cout << "GAME STARTS! This is free mod." << endl;
 	cout << "Marbles will keep moving and never be defeated in this model." << endl;
-	cout << "You can press 'p' to pause the game and/or hold Left & Right Mouse Button to pick Saturn to draw on the ground." << endl;
+	cout << "You can hold Left & Right Mouse Button to pick Saturn to draw on the ground." << endl;
 	cout << "Press 1-5 will change current drawing color." << endl;
+	cout << "Press +/- to change the game speed." << endl;
 }
 void STARTmatch()
 {
 	startgame = true;
 	freemode = false;
-	std::cout << "GAME STARTS!" << endl;
+	std::cout << "GAME STARTS! This is match mod" << endl;
 	cout << "Marbles will be defeated if it's base (Cone) is hit 3 times by other marbles." << endl;
-	cout << "Press -/+ to change the game speed." << endl;
+	cout << "Press +/- to change the game speed." << endl;
 }
 void Skill(int player) {
 	vector<grid>::iterator i;
