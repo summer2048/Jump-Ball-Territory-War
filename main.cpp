@@ -1429,6 +1429,7 @@ void STARTfree()
 	cout << "Marbles will keep moving and never be defeated in this model." << endl;
 	cout << "You can press 'p' to pause the game and/or hold Left & Right Mouse Button to pick Saturn to draw on the ground." << endl;
 	cout << "Press 1-5 will change current drawing color." << endl;
+	cout << "left mouse click the player interface (small square for each player) will use skill" << endl;
 }
 void STARTmatch()
 {
@@ -1437,6 +1438,7 @@ void STARTmatch()
 	std::cout << "GAME STARTS!" << endl;
 	cout << "Marbles will be defeated if it's base (Cone) is hit 3 times by other marbles." << endl;
 	cout << "Press -/+ to change the game speed." << endl;
+	cout << "Left mouse click the player interface (small square for each player) will use skill" << endl;
 }
 void Skill(int player) {
 	vector<grid>::iterator i;
