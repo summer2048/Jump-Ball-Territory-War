@@ -1381,6 +1381,7 @@ void keyboard(unsigned char key, int x, int y)
 		if (picked_object != -1 && objects[picked_object].type != Cone){
 			objects[picked_object] = objects[objects.size()-1];
 			objects.pop_back();
+			picked_object = -1;
 		}
 		break;
 	case 'p':
@@ -1453,7 +1454,6 @@ void STARTfree()
 	cout << "Marbles will keep moving and never be defeated in this model." << endl;
 	cout << "You can hold Left & Right Mouse Button to pick Saturn to draw on the ground." << endl;
 	cout << "Press 1-5 will change current drawing color." << endl;
-	cout << "Press +/- to change the game speed." << endl;
 }
 void STARTmatch()
 {
@@ -1461,7 +1461,7 @@ void STARTmatch()
 	freemode = false;
 	std::cout << "GAME STARTS! This is match mod" << endl;
 	cout << "Marbles will be defeated if it's base (Cone) is hit 3 times by other marbles." << endl;
-	cout << "Press +/- to change the game speed." << endl;
+	cout << "Press -/+ to change the game speed." << endl;
 }
 void Skill(int player) {
 	vector<grid>::iterator i;
