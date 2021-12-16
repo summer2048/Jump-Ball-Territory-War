@@ -8,7 +8,6 @@ Sean Gao (gaox47, 400194815)
 Yuxuan Huang (400191170)
 
 
-
 ## List of Commands  
 | Command  | Description |
 |---|---|

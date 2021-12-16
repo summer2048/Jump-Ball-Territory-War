@@ -601,16 +601,16 @@ void init()
 	initParts(4, 18.5, -18.5);
 
 	glEnable(GL_TEXTURE_2D);
-	img_1 = LoadPPM("ppm/sky1.ppm", &Width1, &Height1, &Max1);
-	Welcome_img = LoadPPM("ppm/welcome.ppm", &Width2, &Height2, &Max2);
-	CrossSkill_img = LoadPPM("ppm/player.ppm", &Width3, &Height3, &Max3);
+	img_1 = LoadPPM("sky1.ppm", &Width1, &Height1, &Max1);
+	Welcome_img = LoadPPM("welcome.ppm", &Width2, &Height2, &Max2);
+	CrossSkill_img = LoadPPM("player.ppm", &Width3, &Height3, &Max3);
 	ObjectLoader Obj_1;
 	Obj_1 = ObjectLoader();
-	Obj_1.loadObject("obj/Saturn.obj");
+	Obj_1.loadObject("Saturn.obj");
 	list["Obj_1"] = Obj_1;
 	ObjectLoader Obj_2;
 	Obj_2 = ObjectLoader();
-	Obj_2.loadObject("obj/heart.obj");
+	Obj_2.loadObject("heart.obj");
 	list["Obj_2"] = Obj_2;
 	
 	initObjects();
@@ -1344,6 +1344,7 @@ void Mouse(int btn, int state, int x, int y)
 
 void resetgame(){
 	clear();
+	gameSpeed = 1;
 	parts.clear();
 	initParts(1, -18.5, 18.5);
 	initParts(2, 18.5, 18.5);
