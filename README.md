@@ -1,6 +1,9 @@
 # Final-Project Group 19
 ## How to run
-We run it in Windows system, using mingw and 'make' command.
+Windows system: using mingw and 'make' command.
+(If openGL or mingw terminal was not installed yet, see Getting Started Windows for help)
+
+Mac users are going to download Xcode and launch in Xcode.
 
 ## Group Members
 Mengfei Liang (Liangm17, 400227110)
